@@ -1,0 +1,153 @@
+export const heroServices = [
+  { label: "Уборка после происшествий" },
+  { label: "Генеральная уборка квартир и домов" },
+  { label: "Мойка окон и витрин" },
+  { label: "Удаление грибка и плесени" },
+];
+
+export const heroStats = [
+  { value: "500+", label: "уборок выполнено" },
+  { value: "24/7", label: "на связи" },
+  { value: "5 лет", label: "на рынке" },
+];
+
+// Photos for these two reasons are DB-backed now (SiteImage keys
+// "why-us-reason1"/"why-us-reason2", editable at /admin) — only copy stays
+// here.
+export const whyUs = {
+  reason1: {
+    text: "Мы приедем в удобное для вас время без задержек и выполним работу качественно и в срок. Наши специалисты на связи 24/7 в мессенджерах и всегда готовы помочь.",
+  },
+  reason2: {
+    text: "Работаем с физическими и юридическими лицами — удобные условия для дома, офиса или предприятия.",
+  },
+};
+
+export type PriceRow = { name: string; price: string };
+export type PriceTabId = "flats" | "houses" | "rooms" | "special" | "windows";
+
+export const priceTabs: { id: PriceTabId; label: string }[] = [
+  { id: "flats", label: "Квартиры" },
+  { id: "houses", label: "Дома" },
+  { id: "rooms", label: "Помещения" },
+  { id: "special", label: "Спецуборка" },
+  { id: "windows", label: "Окна" },
+];
+
+export const priceData: Record<PriceTabId, PriceRow[]> = {
+  flats: [
+    { name: "Генеральная", price: "от 100 руб." },
+    { name: "Поддерживающая", price: "от 100 руб." },
+    { name: "Ежедневная", price: "от 100 руб." },
+    { name: "Точечная", price: "от 100 руб." },
+    { name: "Разовая", price: "от 100 руб." },
+    { name: "После ремонта", price: "от 200 руб." },
+    { name: "После аренды", price: "договорная" },
+    { name: "Однокомнатной", price: "от 100 руб." },
+    { name: "Двухкомнатной", price: "от 150 руб." },
+  ],
+  houses: [
+    { name: "Генеральная", price: "от 150 руб." },
+    { name: "После ремонта", price: "от 250 руб." },
+    { name: "Коттедж", price: "договорная" },
+    { name: "Дача", price: "от 120 руб." },
+  ],
+  rooms: [
+    { name: "Уборка офисов", price: "от 120 руб." },
+    { name: "Бизнес-центры", price: "договорная" },
+    { name: "Рестораны и кафе", price: "от 150 руб." },
+  ],
+  special: [
+    { name: "После пожара/потопа", price: "договорная" },
+    { name: "После смерти", price: "договорная" },
+    { name: "Удаление плесени", price: "от 100 руб." },
+  ],
+  windows: [
+    { name: "Мойка окон", price: "от 80 руб." },
+    { name: "Мойка витрин", price: "от 100 руб." },
+  ],
+};
+
+// Calculator field/pricing options now live in the CalculatorOption table
+// (lib/calculatorOptionsData.ts, admin-editable at /admin/calculator) —
+// this is just the decorative, unwired "Количество комнат" selector that
+// was never part of the pricing formula.
+export const roomOptions = ["1", "2", "3", "4", "5+"];
+
+export const gallery = [
+  {
+    title: "Уборка кухни в запущенной квартире",
+    slotId: "gallery-kitchen",
+    beforeLabel: "Фото «до»: кухня",
+    afterLabel: "Фото «после»: кухня",
+    meta: ["⏱ Сроки: 2 часа", "↔ Площадь: 14 м2", "🏷 Тип: генеральная уборка"],
+  },
+  {
+    title: "Очистка бассейна",
+    slotId: "gallery-pool",
+    beforeLabel: "Фото «до»: бассейн",
+    afterLabel: "Фото «после»: бассейн",
+    meta: ["⏱ Сроки: 9 часов", "↔ Площадь: 32 м2", "🏷 Тип: спецуборка"],
+  },
+];
+
+export const faq = [
+  {
+    question: "Какие виды уборки вы проводите?",
+    answer:
+      "Генеральную, поддерживающую, послестроительную уборку, спецуборку после происшествий, мойку окон и витрин — для квартир, домов и коммерческих помещений.",
+  },
+  {
+    question: "Могу ли я заказать срочную уборку?",
+    answer:
+      "Да, мы работаем 24/7 и можем выехать на срочную уборку в любое время, включая выходные и праздничные дни.",
+  },
+  {
+    question: "Вы работаете только в Минске или и в других городах?",
+    answer: "Мы принимаем заявки по всей Беларуси, выезжая в другие города по договорённости.",
+  },
+  {
+    question: "Как проходит уборка в запущенных квартирах?",
+    answer:
+      "Специалисты выезжают в защитной экипировке, вывозят мусор, обрабатывают поверхности профессиональной химией и устраняют запахи и загрязнения любой сложности.",
+  },
+  {
+    question: "Вы работаете только с физическими или и с юридическими лицами?",
+    answer:
+      "Мы работаем и с физическими, и с юридическими лицами — предлагаем удобные условия для дома, офиса или предприятия.",
+  },
+];
+
+export const specialists = [
+  { role: "Клинер-универсал", slotId: "staff-1", placeholder: "Фото специалиста", exp: "опыт от 3 лет" },
+  { role: "Бригадир", slotId: "staff-2", placeholder: "Фото специалиста", exp: "опыт от 5 лет" },
+  { role: "Специалист по спецуборке", slotId: "staff-3", placeholder: "Фото специалиста", exp: "опыт от 4 лет" },
+  { role: "Менеджер по заявкам", slotId: "staff-4", placeholder: "Фото специалиста", exp: "на связи 24/7" },
+];
+
+// "Отзывы" now live in the Review table (admin-editable at /admin/reviews).
+
+export const company = {
+  name: "Специализированный-клининг",
+  tagline: "Клининг квартир, домов и офисов",
+  city: "Минск",
+  phone: "+375 29 232-52-09",
+  email: "info@specclean.by",
+};
+
+// Separate from company.phone above (the direct-call line) — this is the
+// dedicated WhatsApp/Viber contact number.
+const messengerPhone = "+375256432677";
+const messengerPhoneDigits = messengerPhone.replace(/\D/g, "");
+
+export const feedbackEmail = "mojkaokonbel@gmail.com";
+
+// "chat" scrolls to the contact block until an actual in-site chat ships
+// alongside the admin/orders backend.
+export const contactLinks = {
+  whatsapp: `https://wa.me/${messengerPhoneDigits}`,
+  viber: `viber://chat?number=%2B${messengerPhoneDigits}`,
+  telegram: "https://t.me/mojkaokonbel",
+  email: `mailto:${feedbackEmail}`,
+  chat: "#order",
+};

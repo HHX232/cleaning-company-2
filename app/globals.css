@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #ffffff;
+  --color-surface: #f1f7f0;
+  --color-ink: #152318;
+  --color-muted: #59695f;
+  --color-primary: #2f9e5b;
+  --color-primary-dark: #1f7a41;
+  --color-border: #dce8de;
+  --color-dark: #152318;
+  --color-on-primary: #ffffff;
+  --color-hero-fade: rgba(21, 35, 24, 0.55);
+  /* "In progress" order status — distinct from the green primary/"done"
+     color, since the source design collided both onto the same green. */
+  --color-info: #2f6fed;
+}
+
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-ink: var(--color-ink);
+  --color-muted: var(--color-muted);
+  --color-primary: var(--color-primary);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-border: var(--color-border);
+  --color-dark: var(--color-dark);
+  --color-on-primary: var(--color-on-primary);
+  --color-hero-fade: var(--color-hero-fade);
+  --color-info: var(--color-info);
+  --font-sans: var(--font-golos), -apple-system, sans-serif;
+}
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+@keyframes fab-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
