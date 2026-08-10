@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   session: { strategy: "jwt" },
   pages: { signIn: "/admin/login" },
   providers: [
@@ -15,7 +16,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         const email = credentials?.email;
         const password = credentials?.password;
-        if (typeof email !== "string" || typeof password !== "string") return null;
+        if (typeof email !== "string" || typeof password !== "string")
+          return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return null;

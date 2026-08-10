@@ -1,0 +1,162 @@
+---
+- name: Install system dependencies (git, nginx, curl, gnupg)
+  ansible.builtin.apt:
+    name:
+      - git
+      - nginx
+      - curl
+      - gnupg
+    state: present
+    update_cache: true
+
+- name: Add Node.js APT repository
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }}.x | bash -
+    executable: /bin/bash
+    creates: /etc/apt/sources.list.d/nodesource.list
+
+- name: Install Node.js
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+    update_cache: true
+
+- name: Install PM2 globally via npm
+  community.general.npm:
+    name: pm2
+    global: true
+    state: present
+
+- name: Clone or update repository
+  ansible.builtin.git:
+    repo: "{{ repo_url }}"
+    dest: "{{ app_dir }}"
+    version: "{{ branch }}"
+    force: true
+  register: git_result
+
+- name: Create .env from template
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ app_dir }}/.env"
+    mode: "0600"
+
+- name: Install npm dependencies (ci)
+  ansible.builtin.command:
+    cmd: npm ci
+    chdir: "{{ app_dir }}"
+  args:
+    creates: "{{ app_dir }}/node_modules/.package-lock.json"
+  register: npm_ci
+  changed_when: npm_ci.stdout is search("added")
+
+- name: Run Prisma migrations
+  ansible.builtin.command:
+    cmd: npx prisma migrate deploy
+    chdir: "{{ app_dir }}"
+  register: prisma_migrate
+  changed_when: prisma_migrate.stdout is search("migrations applied")
+
+- name: Seed database (if no dev.db exists)
+  ansible.builtin.command:
+    cmd: npx prisma db seed
+    chdir: "{{ app_dir }}"
+  register: prisma_seed
+  changed_when: prisma_seed.stdout is search("seed")
+
+- name: Build Next.js application (standalone)
+  ansible.builtin.command:
+    cmd: npm run build
+    chdir: "{{ app_dir }}"
+  environment:
+    NODE_OPTIONS: "--max-old-space-size=512"
+  register: build_result
+  changed_when: build_result.stdout is search("Compiled successfully")
+  when: git_result.changed or prisma_migrate.changed or not (prisma_migrate is skipped)
+
+- name: Copy static assets to standalone output
+  ansible.builtin.copy:
+    src: "{{ app_dir }}/.next/static/"
+    dest: "{{ app_dir }}/.next/standalone/.next/static/"
+    remote_src: true
+    mode: preserve
+
+- name: Copy public folder to standalone
+  ansible.builtin.copy:
+    src: "{{ app_dir }}/public/"
+    dest: "{{ app_dir }}/.next/standalone/public/"
+    remote_src: true
+    mode: preserve
+
+- name: Copy .env into standalone
+  ansible.builtin.copy:
+    src: "{{ app_dir }}/.env"
+    dest: "{{ app_dir }}/.next/standalone/.env"
+    remote_src: true
+    mode: "0600"
+
+- name: Copy prisma folder into standalone
+  ansible.builtin.copy:
+    src: "{{ app_dir }}/prisma/"
+    dest: "{{ app_dir }}/.next/standalone/prisma/"
+    remote_src: true
+    mode: preserve
+
+- name: Fix ownership for application files
+  ansible.builtin.file:
+    path: "{{ app_dir }}"
+    owner: dev
+    group: dev
+    recurse: true
+    state: directory
+
+- name: Restart or start application via PM2
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      cd {{ app_dir }}
+      pm2 restart cleaning || pm2 start .next/standalone/server.js --name cleaning
+      pm2 save
+    executable: /bin/bash
+  register: pm2_result
+  changed_when: pm2_result.stdout is search("restart") or pm2_result.stdout is search("start")
+
+- name: Enable PM2 startup script (idempotent)
+  ansible.builtin.shell:
+    cmd: |
+      set -o pipefail
+      pm2 startup systemd -u root --hp /root || true
+    executable: /bin/bash
+    creates: /etc/systemd/system/pm2-root.service
+  register: pm2_startup
+  changed_when: pm2_startup.stdout is search("Startup")
+
+- name: Deploy nginx config
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ domain_name }}
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload nginx
+
+- name: Enable site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/{{ domain_name }}
+    dest: /etc/nginx/sites-enabled/{{ domain_name }}
+    state: link
+  notify: Reload nginx
+
+- name: Remove old site (cleaning)
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/cleaning
+    state: absent
+  notify: Reload nginx
+
+- name: Remove default site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx

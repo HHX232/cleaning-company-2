@@ -1,0 +1,15 @@
+- name: Deploy Next.js app
+  hosts: cleaning-server
+  become: true
+  roles:
+    - deploy
+  vars_files:
+    - vars/vault.yml
+  vars:
+    app_dir: /opt/cleaning
+    repo_url: https://github.com/HHX232/cleaning-company-2.git
+    branch: main
+    nodejs_version: "20"
+    app_port: 3000
+    site_url: "https://специализированный-клининг.бел"
+    domain_name: "xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais"

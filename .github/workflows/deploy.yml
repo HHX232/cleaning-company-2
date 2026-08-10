@@ -1,0 +1,39 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+          ansible-galaxy collection install community.general
+
+      - name: Create vault password file
+        run: |
+          echo "${{ secrets.VAULT_PASS }}" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          cat << 'EOF' > ~/.ssh/id_rsa
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          EOF
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 62.182.102.68 >> ~/.ssh/known_hosts
+
+      - name: Run Ansible playbook
+        run: |
+          ansible-playbook -i deploy/ansible/inventory.yml \
+            deploy/ansible/playbook.yml \
+            --vault-password-file .vault_pass
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"

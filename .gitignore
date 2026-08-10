@@ -1,5 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# Ansible vault
+deploy/ansible/vars/*.vault
+deploy/ansible/.vault_pass
+*.vault
+.vault_pass
+
 # dependencies
 /node_modules
 /.pnp
@@ -32,6 +38,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.j2
 
 # vercel
 .vercel
