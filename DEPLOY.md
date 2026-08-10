@@ -1,118 +1,118 @@
-# Deployment guide
+# Инструкция по деплою
 
-Stack: Next.js 16 (standalone build) + Prisma + **SQLite** (no separate DB server) + S3-compatible object storage (srvstorage.kz) for images/chat files + a Telegram bot (long-polling). Targeted at a small 1 GB RAM VPS.
+Стек: Next.js 16 (сборка standalone) + Prisma + **SQLite** (отдельный сервер БД не нужен) + S3-совместимое объектное хранилище (srvstorage.kz) для картинок и файлов чата + Telegram-бот (long-polling). Рассчитано на небольшой VPS с 1 ГБ RAM.
 
-## 0. Prerequisites (on the server)
+## 0. Что нужно на сервере
 
-- **Node.js 20 LTS** and npm.
+- **Node.js 20 LTS** и npm.
 - **git**.
-- **Swap** — on a 1 GB box this is essential (the build is memory-hungry). Create ~2 GB once:
+- **Swap** — на коробке с 1 ГБ он обязателен (сборка прожорлива по памяти). Создать ~2 ГБ один раз:
   ```bash
   sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile
   sudo mkswap /swapfile && sudo swapon /swapfile
   echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
   ```
 
-## 1. Clone
+## 1. Клонирование
 
 ```bash
-git clone https://github.com/ttr232/cleaning-company.git
-cd cleaning-company
+git clone https://github.com/HHX232/cleaning-company-2.git
+cd cleaning-company-2
 ```
 
-## 2. Environment variables
+## 2. Переменные окружения
 
-Create a `.env` file in the project root. **The secret values are sent separately — they are not in the repo.**
+Создать файл `.env` в корне проекта. **Значения секретов передаются отдельно — их нет в репозитории.**
 
 ```env
-# SQLite database file (relative to prisma/)
+# Файл базы SQLite (путь относительно prisma/)
 DATABASE_URL="file:./dev.db"
 
-# NextAuth session secret — generate a fresh one for prod:
+# Секрет сессий NextAuth — сгенерировать свой для прода:
 #   openssl rand -base64 32
-AUTH_SECRET="<generate-your-own>"
+AUTH_SECRET="<сгенерировать-свой>"
 
-# Public site URL — MUST be the real domain in prod.
-# Used by sitemap.xml, robots.txt and Telegram notification links.
-SITE_URL="https://your-domain.example"
+# Публичный URL сайта — на проде ОБЯЗАТЕЛЬНО реальный домен.
+# Используется в sitemap.xml, robots.txt и ссылках Telegram-уведомлений.
+SITE_URL="https://ваш-домен.example"
 
-# Telegram bot (from @BotFather) — optional; if omitted the bot just doesn't start.
-TELEGRAM_BOT_TOKEN="<sent-separately>"
+# Telegram-бот (из @BotFather) — опционально; без токена бот просто не стартует.
+TELEGRAM_BOT_TOKEN="<передаётся-отдельно>"
 
-# S3-compatible object storage (images + chat attachments)
+# S3-совместимое хранилище (картинки + вложения чата)
 S3_ENDPOINT="https://s3.kz-1.srvstorage.kz"
 S3_REGION="kz-1"
 S3_BUCKET="cleaning-company"
-S3_ACCESS_KEY="<sent-separately>"
-S3_SECRET_KEY="<sent-separately>"
+S3_ACCESS_KEY="<передаётся-отдельно>"
+S3_SECRET_KEY="<передаётся-отдельно>"
 ```
 
-## 3. Install dependencies
+## 3. Установка зависимостей
 
 ```bash
 npm ci
 ```
 
-## 4. Database (SQLite — the DB is a single file)
+## 4. База данных (SQLite — база это один файл)
 
-**Option A — keep the current content (recommended).** The site already has real content (service pages, calculator, admin accounts). That content lives in the file `prisma/dev.db`, which is intentionally **not** in git. Copy the `dev.db` you were given into `prisma/dev.db`:
+**Вариант A — сохранить текущий контент (рекомендуется).** На сайте уже есть реальный контент (страницы услуг, калькулятор, аккаунты админов). Он лежит в файле `prisma/dev.db`, которого намеренно **нет** в git. Скопировать полученный `dev.db` в `prisma/dev.db`:
 ```bash
-cp /path/to/received/dev.db prisma/dev.db
+cp /путь/к/полученному/dev.db prisma/dev.db
 ```
 
-**Option B — start fresh** (baseline seed content + one default admin):
+**Вариант B — начать с нуля** (базовый seed-контент + один админ по умолчанию):
 ```bash
 npx prisma migrate deploy
 npx prisma db seed
 ```
 
-Either way, apply any pending migrations (safe to run, no-op if already applied):
+В любом случае применить непринятые миграции (запускать безопасно, если всё применено — ничего не сделает):
 ```bash
 npx prisma migrate deploy
 npx prisma generate
 ```
 
-> Images and chat files live in the shared S3 bucket, so they're already available — nothing to copy.
+> Картинки и файлы чата лежат в общем S3-бакете, поэтому они уже доступны — копировать ничего не нужно.
 
-## 5. Build
+## 5. Сборка
 
 ```bash
 npm run build
 ```
-Memory-heavy — this is why swap matters. If the box still struggles, build on another machine and copy the `.next/` folder over.
+Прожорлива по памяти — поэтому и нужен swap. Если коробка всё равно не тянет — собрать на другой машине и скопировать папку `.next/` на сервер.
 
-## 6. Run
+## 6. Запуск
 
-The project is configured with `output: "standalone"` (a minimal self-contained server). After building, copy the assets the standalone server needs, then run it:
+В проекте включён `output: "standalone"` (минимальный самодостаточный сервер). После сборки скопировать нужные standalone-серверу ассеты и запустить его:
 
 ```bash
 cp -r .next/static .next/standalone/.next/static
 cp -r public .next/standalone/public
 cp .env .next/standalone/.env
-cp -r prisma .next/standalone/prisma   # SQLite file + schema for Prisma at runtime
+cp -r prisma .next/standalone/prisma   # файл SQLite + схема для Prisma в рантайме
 
 PORT=3000 node .next/standalone/server.js
 ```
 
-**Simpler alternative** (uses a bit more RAM/disk, but no copy steps): `npm start` — runs `next start` on port 3000, reads `.env` automatically.
+**Проще (но чуть больше RAM/диска, без шагов копирования):** `npm start` — запускает `next start` на порту 3000, `.env` читается автоматически.
 
-## 7. Keep it running (pm2 example)
+## 7. Держать запущенным (пример на pm2)
 
 ```bash
 npm i -g pm2
 pm2 start .next/standalone/server.js --name cleaning --update-env
 pm2 save
-pm2 startup   # follow the printed command to enable auto-start on reboot
+pm2 startup   # выполнить напечатанную команду, чтобы включить автозапуск при перезагрузке
 ```
-(or use a systemd service with `EnvironmentFile=/path/.env`).
+(или systemd-сервис с `EnvironmentFile=/путь/.env`).
 
-## 8. Reverse proxy + HTTPS
+## 8. Реверс-прокси + HTTPS
 
-Put nginx/Caddy in front, proxying `:80/:443` → `127.0.0.1:3000`, and terminate TLS there. This also offloads static file serving from Node. Point your domain's DNS at the server and set `SITE_URL` to that domain.
+Поставить впереди nginx/Caddy, проксирующий `:80/:443` → `127.0.0.1:3000`, и терминировать TLS там же. Это заодно снимает раздачу статики с Node. Направить DNS домена на сервер и указать `SITE_URL` = этот домен.
 
-## Notes / gotchas
+## Заметки / подводные камни
 
-- **Telegram bot**: starts automatically on server boot if `TELEGRAM_BOT_TOKEN` is set (long-polling, see `instrumentation.ts`). Run **only one** instance — two processes polling the same bot token conflict.
-- **Bot profile photo/name**: set via @BotFather (`/setuserpic`, `/setname`) — can't be done from code.
-- **SITE_URL** must be the real domain in prod, otherwise sitemap/robots/Telegram links point at localhost.
-- **Never commit `.env` or `prisma/*.db`** — both are gitignored on purpose (secrets and data).
+- **Telegram-бот**: стартует автоматически при загрузке сервера, если задан `TELEGRAM_BOT_TOKEN` (long-polling, см. `instrumentation.ts`). Запускать **только один** экземпляр — два процесса с одним токеном конфликтуют.
+- **Аватар/имя бота**: ставятся через @BotFather (`/setuserpic`, `/setname`) — из кода это сделать нельзя.
+- **SITE_URL** на проде должен быть реальным доменом, иначе ссылки в sitemap/robots/Telegram будут вести на localhost.
+- **Никогда не коммитить `.env` и `prisma/*.db`** — оба намеренно в gitignore (секреты и данные).
