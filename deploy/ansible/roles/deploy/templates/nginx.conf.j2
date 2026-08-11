@@ -37,10 +37,4 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
     }
-
-    location /_next/static {
-        proxy_pass http://127.0.0.1:{{ app_port }}/_next/static;
-        expires 365d;
-        add_header Cache-Control "public, immutable";
-    }
 }
