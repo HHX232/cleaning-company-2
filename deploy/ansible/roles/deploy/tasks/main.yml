@@ -59,6 +59,13 @@
   register: prisma_migrate
   changed_when: prisma_migrate.stdout is search("migrations applied")
 
+- name: Generate Prisma client
+  ansible.builtin.command:
+    cmd: npx prisma generate
+    chdir: "{{ app_dir }}"
+  register: prisma_generate
+  changed_when: true
+
 - name: Seed database (if no dev.db exists)
   ansible.builtin.command:
     cmd: npx prisma db seed
