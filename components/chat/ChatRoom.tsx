@@ -61,6 +61,8 @@ export default function ChatRoom({
     let cancelled = false;
 
     async function poll() {
+      // Don't hit the server for a backgrounded tab — refresh on return.
+      if (document.visibilityState === "hidden") return;
       const res = await fetch(`/api/chat/${chatId}/messages`);
       if (!res.ok || cancelled) return;
       const data: { messages: ChatMessageDto[] } = await res.json();
@@ -71,9 +73,14 @@ export default function ChatRoom({
 
     poll();
     const interval = setInterval(poll, POLL_INTERVAL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") poll();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [chatId]);
 

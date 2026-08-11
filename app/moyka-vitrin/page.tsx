@@ -29,7 +29,10 @@ export default function WindowWashingPage() {
       <WhatsIncluded />
       <PromotionsMarquee />
       <PromotionsList />
-      <Gallery title="До и после" items={beforeAfter} />
+      <Gallery
+        title="До и после"
+        items={beforeAfter.map((b) => ({ id: b.slotId, title: b.title, meta: b.meta, beforeUrl: null, afterUrl: null }))}
+      />
       <Pricing />
       <Faq title="Вопросы и ответы" items={faq} defaultOpenIndex={0} />
       <ChatContact />

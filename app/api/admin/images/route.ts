@@ -5,7 +5,7 @@ import { imageUrl, putImage } from "@/lib/imageStorage";
 
 const MAX_SIZE_BYTES = 4 * 1024 * 1024;
 
-const targetFields = ["photoUrl", "heroImageUrl", "consultationImageUrl"] as const;
+const targetFields = ["photoUrl", "heroImageUrl", "consultationImageUrl", "beforeUrl", "afterUrl"] as const;
 type TargetField = (typeof targetFields)[number];
 
 function isTargetField(value: FormDataEntryValue | null): value is TargetField {
@@ -48,6 +48,8 @@ export async function POST(request: Request) {
       await prisma.servicePage.update({ where: { id: targetId }, data: { [targetField]: url } });
       const page = await prisma.servicePage.findUnique({ where: { id: targetId }, select: { slug: true } });
       if (page) revalidatePath(`/${page.slug}`);
+    } else if (targetTable === "galleryItem" && (targetField === "beforeUrl" || targetField === "afterUrl")) {
+      await prisma.galleryItem.update({ where: { id: targetId }, data: { [targetField]: url } });
     }
   }
 

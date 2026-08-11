@@ -98,10 +98,31 @@ export default function PhoneConsentModal({
               type="checkbox"
               checked={consent}
               onChange={(e) => setConsent(e.target.checked)}
-              className="mt-0.5 accent-primary"
+              className="mt-0.5 shrink-0 accent-primary"
             />
-            Даю согласие на обработку персональных данных и подтверждаю, что ознакомлен с политикой обработки
-            персональных данных и условиями пользовательского соглашения.
+            <span className="min-w-0">
+              Даю согласие на обработку персональных данных и подтверждаю, что ознакомлен с{" "}
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="underline hover:text-ink"
+              >
+                политикой обработки персональных данных
+              </a>{" "}
+              и условиями{" "}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="underline hover:text-ink"
+              >
+                пользовательского соглашения
+              </a>
+              .
+            </span>
           </label>
         </form>
       </div>

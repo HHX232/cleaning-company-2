@@ -5,6 +5,7 @@ import Header from "@/components/landing/Header";
 import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
 import ServiceCategoryPage from "@/components/service-page/ServiceCategoryPage";
+import { servicePageHeroDefault, servicePageConsultationDefault } from "@/lib/homeImageDefaults";
 import { prisma } from "@/lib/prisma";
 
 // ISR: known slugs are built statically below and served from cache, then
@@ -65,8 +66,8 @@ export default async function ServicePageRoute({ params }: PageProps) {
       <ServiceCategoryPage
         title={page.title}
         heroDescription={page.heroDescription}
-        heroImageUrl={page.heroImageUrl}
-        consultationImageUrl={page.consultationImageUrl}
+        heroImageUrl={page.heroImageUrl ?? servicePageHeroDefault}
+        consultationImageUrl={page.consultationImageUrl ?? servicePageConsultationDefault}
         breadcrumbCategory={{ label: page.breadcrumbCategoryLabel, href: page.breadcrumbCategoryHref }}
         showFeaturesBlock={page.showFeaturesBlock}
         featureTags={(page.featureTags as string[] | null) ?? []}

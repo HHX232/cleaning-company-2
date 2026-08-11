@@ -78,7 +78,7 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
   }
 
   return (
-    <section className="bg-surface px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
+    <section id="calculator" className="bg-surface px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
       <h2 className="mb-2 text-center text-2xl font-extrabold text-ink sm:text-[30px]">Подробный расчёт стоимости</h2>
       <p className="mb-6 text-center text-sm text-muted sm:mb-8">
         Учитывает тип объекта, состояние, доп. услуги, область и срочность

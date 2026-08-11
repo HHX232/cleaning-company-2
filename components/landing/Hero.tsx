@@ -1,11 +1,12 @@
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { heroServices, heroStats } from "@/lib/content";
+import OrderButton from "./OrderButton";
 
-export default function Hero() {
+export default function Hero({ imageSrc }: { imageSrc?: string }) {
   return (
     <div className="relative mx-auto mt-4 mb-6 max-w-385 px-4 sm:mt-6 sm:px-6 lg:mb-37.5 lg:px-10">
       <section className="relative min-h-105 overflow-hidden rounded-[20px] bg-dark sm:min-h-120 lg:min-h-140 lg:rounded-[26px]">
-        <ImagePlaceholder label="Фото: клинер за работой" className="absolute inset-0" />
+        <ImagePlaceholder label="Фото: клинер за работой" src={imageSrc} className="absolute inset-0" />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(21,35,24,0.94)_0%,rgba(21,35,24,0.8)_45%,rgba(21,35,24,0.45)_100%)]" />
 
         <div className="relative flex h-full flex-col justify-center px-6 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-15">
@@ -21,12 +22,9 @@ export default function Hero() {
             Доступны 24/7 — приедем, когда это нужно именно вам. Все клининговые услуги в одном месте.
           </p>
           <div className="mb-6 flex flex-wrap items-center gap-4 sm:mb-9">
-            <a
-              href="#order"
-              className="inline-block rounded-[11px] bg-primary px-6 py-3.5 text-sm font-bold text-on-primary transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.25)] active:translate-y-0 active:scale-[0.98] sm:px-9 sm:py-4.25 sm:text-base"
-            >
+            <OrderButton className="inline-block cursor-pointer rounded-[11px] bg-primary px-6 py-3.5 text-sm font-bold text-on-primary transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.25)] active:translate-y-0 active:scale-[0.98] sm:px-9 sm:py-4.25 sm:text-base">
               Заказать уборку
-            </a>
+            </OrderButton>
             <a
               href="#services"
               className="inline-flex items-center gap-2 border-b border-white/40 pb-0.5 text-sm font-bold text-white transition-colors duration-200 hover:border-white hover:text-primary sm:text-[15px]"

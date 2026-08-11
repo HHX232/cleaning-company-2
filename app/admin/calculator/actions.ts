@@ -19,11 +19,12 @@ export async function createOption(formData: FormData) {
   const key = String(formData.get("key") ?? "").trim();
   const label = String(formData.get("label") ?? "").trim();
   const value = Number(formData.get("value") ?? 0);
+  const isFixed = formData.get("isFixed") === "on";
   const order = Number(formData.get("order") ?? 0);
 
   if (!field || !key || !label || Number.isNaN(value)) return;
 
-  await prisma.calculatorOption.create({ data: { field, key, label, value, order } });
+  await prisma.calculatorOption.create({ data: { field, key, label, value, isFixed, order } });
   revalidatePath("/admin/calculator");
   revalidatePath("/");
 }
@@ -33,11 +34,12 @@ export async function updateOption(id: string, formData: FormData) {
 
   const label = String(formData.get("label") ?? "").trim();
   const value = Number(formData.get("value") ?? 0);
+  const isFixed = formData.get("isFixed") === "on";
   const order = Number(formData.get("order") ?? 0);
 
   if (!label || Number.isNaN(value)) return;
 
-  await prisma.calculatorOption.update({ where: { id }, data: { label, value, order } });
+  await prisma.calculatorOption.update({ where: { id }, data: { label, value, isFixed, order } });
   revalidatePath("/admin/calculator");
   revalidatePath("/");
 }

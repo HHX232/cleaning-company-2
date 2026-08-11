@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { priceData, priceTabs, PriceTabId } from "@/lib/content";
+import Link from "next/link";
+import { priceTabs, PriceTabId } from "@/lib/content";
+import type { PriceRowDto } from "@/lib/priceData";
 
-export default function Pricing() {
+export default function Pricing({ priceData }: { priceData: Record<PriceTabId, PriceRowDto[]> }) {
   const [activeTab, setActiveTab] = useState<PriceTabId>("flats");
 
   return (
@@ -38,12 +40,12 @@ export default function Pricing() {
             >
               <span className="text-sm font-semibold text-ink sm:text-[15px]">{row.name}</span>
               <span className="hidden text-sm text-muted sm:block">{row.price}</span>
-              <a
-                href="#order"
+              <Link
+                href="/#calculator"
                 className="col-start-2 row-start-1 justify-self-end rounded-lg bg-primary px-3.5 py-2 text-xs font-bold whitespace-nowrap text-on-primary transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_8px_18px_rgba(0,0,0,0.2)] active:translate-y-0 active:scale-[0.98] sm:col-start-3 sm:row-start-auto sm:justify-self-auto sm:px-4.5 sm:py-2.5 sm:text-[13px]"
               >
                 подробнее
-              </a>
+              </Link>
               <span className="col-span-2 text-xs text-muted sm:hidden">{row.price}</span>
             </div>
           ))}

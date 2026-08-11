@@ -24,6 +24,8 @@ function ProfilePreview() {
 
     let cancelled = false;
     async function poll() {
+      // Skip polling while the tab is backgrounded; refresh when it returns.
+      if (document.visibilityState === "hidden") return;
       const res = await fetch("/api/chat/unread-count");
       if (!res.ok || cancelled) return;
       const data: { count: number } = await res.json();
@@ -32,9 +34,14 @@ function ProfilePreview() {
 
     poll();
     const interval = setInterval(poll, UNREAD_POLL_INTERVAL_MS);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") poll();
+    };
+    document.addEventListener("visibilitychange", onVisible);
     return () => {
       cancelled = true;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisible);
     };
   }, [session]);
 

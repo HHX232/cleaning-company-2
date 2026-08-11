@@ -23,7 +23,8 @@ export const whyUs = {
   },
 };
 
-export type PriceRow = { name: string; price: string };
+// Prices themselves are admin-editable now (PriceRow model, /admin/prices,
+// lib/priceData.ts) — the tab categories stay a fixed structural list.
 export type PriceTabId = "flats" | "houses" | "rooms" | "special" | "windows";
 
 export const priceTabs: { id: PriceTabId; label: string }[] = [
@@ -34,62 +35,14 @@ export const priceTabs: { id: PriceTabId; label: string }[] = [
   { id: "windows", label: "Окна" },
 ];
 
-export const priceData: Record<PriceTabId, PriceRow[]> = {
-  flats: [
-    { name: "Генеральная", price: "от 100 руб." },
-    { name: "Поддерживающая", price: "от 100 руб." },
-    { name: "Ежедневная", price: "от 100 руб." },
-    { name: "Точечная", price: "от 100 руб." },
-    { name: "Разовая", price: "от 100 руб." },
-    { name: "После ремонта", price: "от 200 руб." },
-    { name: "После аренды", price: "договорная" },
-    { name: "Однокомнатной", price: "от 100 руб." },
-    { name: "Двухкомнатной", price: "от 150 руб." },
-  ],
-  houses: [
-    { name: "Генеральная", price: "от 150 руб." },
-    { name: "После ремонта", price: "от 250 руб." },
-    { name: "Коттедж", price: "договорная" },
-    { name: "Дача", price: "от 120 руб." },
-  ],
-  rooms: [
-    { name: "Уборка офисов", price: "от 120 руб." },
-    { name: "Бизнес-центры", price: "договорная" },
-    { name: "Рестораны и кафе", price: "от 150 руб." },
-  ],
-  special: [
-    { name: "После пожара/потопа", price: "договорная" },
-    { name: "После смерти", price: "договорная" },
-    { name: "Удаление плесени", price: "от 100 руб." },
-  ],
-  windows: [
-    { name: "Мойка окон", price: "от 80 руб." },
-    { name: "Мойка витрин", price: "от 100 руб." },
-  ],
-};
-
 // Calculator field/pricing options now live in the CalculatorOption table
 // (lib/calculatorOptionsData.ts, admin-editable at /admin/calculator) —
 // this is just the decorative, unwired "Количество комнат" selector that
 // was never part of the pricing formula.
 export const roomOptions = ["1", "2", "3", "4", "5+"];
 
-export const gallery = [
-  {
-    title: "Уборка кухни в запущенной квартире",
-    slotId: "gallery-kitchen",
-    beforeLabel: "Фото «до»: кухня",
-    afterLabel: "Фото «после»: кухня",
-    meta: ["⏱ Сроки: 2 часа", "↔ Площадь: 14 м2", "🏷 Тип: генеральная уборка"],
-  },
-  {
-    title: "Очистка бассейна",
-    slotId: "gallery-pool",
-    beforeLabel: "Фото «до»: бассейн",
-    afterLabel: "Фото «после»: бассейн",
-    meta: ["⏱ Сроки: 9 часов", "↔ Площадь: 32 м2", "🏷 Тип: спецуборка"],
-  },
-];
+// "Примеры работ" is DB-driven now (GalleryItem model, /admin/gallery,
+// lib/galleryData.ts).
 
 export const faq = [
   {

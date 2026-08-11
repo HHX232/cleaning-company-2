@@ -57,17 +57,52 @@ export async function advanceOrderStatus(orderId: string, action: keyof typeof a
   revalidatePath("/profile");
 }
 
-export async function updateOrderSchedule(orderId: string, formData: FormData) {
+// datetime-local value ("YYYY-MM-DDTHH:mm") → Date, or null when cleared.
+function parseDateTimeLocal(raw: FormDataEntryValue | null): Date | null {
+  const v = String(raw ?? "").trim();
+  if (!v) return null;
+  const d = new Date(v);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+// Full edit of an order — every field plus the four status timestamps
+// (assigned/completed/paid/canceled), which the derived status reads from.
+// Clearing a timestamp field moves the order back to the earlier status.
+export async function updateOrderFull(orderId: string, formData: FormData) {
   await requireAdmin();
 
+  const kind = String(formData.get("kind") ?? "") as OrderKind;
+  const title = String(formData.get("title") ?? "").trim();
   const dateStr = String(formData.get("date") ?? "");
   const timeStr = String(formData.get("time") ?? "");
-  if (!dateStr) return;
+  const address = String(formData.get("address") ?? "").trim();
+  const price = Number(formData.get("price") ?? 0);
+  const serviceDetail = String(formData.get("serviceDetail") ?? "").trim();
+  const staff = String(formData.get("staff") ?? "").trim();
+  const payment = String(formData.get("payment") ?? "").trim();
 
+  if (!title || !dateStr) return;
   const date = new Date(`${dateStr}T${timeStr || "00:00"}`);
   if (Number.isNaN(date.getTime())) return;
 
-  await prisma.order.update({ where: { id: orderId }, data: { date } });
+  await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      kind,
+      title,
+      date,
+      address,
+      price: Number.isNaN(price) ? 0 : price,
+      serviceDetail,
+      staff,
+      payment,
+      assignedAt: parseDateTimeLocal(formData.get("assignedAt")),
+      completedAt: parseDateTimeLocal(formData.get("completedAt")),
+      paidAt: parseDateTimeLocal(formData.get("paidAt")),
+      canceledAt: parseDateTimeLocal(formData.get("canceledAt")),
+    },
+  });
+
   revalidatePath("/admin/orders");
   revalidatePath("/profile");
 }

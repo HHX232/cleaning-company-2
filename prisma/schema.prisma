@@ -157,10 +157,13 @@ model CalculatorOption {
   id String @id @default(cuid())
   // "OBJECT_TYPE" | "DIRT" | "BUILDING_TYPE" | "REGION" | "URGENCY" | "STAFF"
   // | "EXTRA" (see lib/calculatorFields.ts). String, not enum — SQLite.
-  field     String
-  key       String
-  label     String
-  value     Float
+  field String
+  key   String
+  label String
+  value Float
+  // isFixed=false: value is a price multiplier (default). isFixed=true: value
+  // is a flat ruble amount added to the total when this option is selected.
+  isFixed   Boolean  @default(false)
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,6 +180,21 @@ model Review {
   stars     Int      @default(5)
   text      String
   service   String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Homepage "Примеры работ" before/after blocks (components/landing/Gallery.tsx).
+// Admin adds/removes blocks; before/after photos are uploaded to S3 and their
+// URLs stored here (same pattern as ServicePage images). meta is a JSON string
+// array of small chips ("⏱ Сроки: 2 часа", ...).
+model GalleryItem {
+  id        String   @id @default(cuid())
+  title     String
+  meta      Json
+  beforeUrl String?
+  afterUrl  String?
   order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -236,4 +254,18 @@ model CallbackRequest {
   telegramChatId  String?
   handledAt       DateTime?
   createdAt       DateTime  @default(now())
+}
+
+// Homepage "Цены на клининг" price table (components/landing/Pricing.tsx).
+// tab is one of lib/content.ts's static PriceTabId values ("flats" |
+// "houses" | "rooms" | "special" | "windows") — the tab categories
+// themselves stay a fixed structural list, only the rows are admin-editable.
+model PriceRow {
+  id        String   @id @default(cuid())
+  tab       String
+  name      String
+  price     String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

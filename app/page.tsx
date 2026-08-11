@@ -13,12 +13,24 @@ import Faq from "@/components/landing/Faq";
 import Specialists from "@/components/landing/Specialists";
 import Reviews from "@/components/landing/Reviews";
 import Footer from "@/components/landing/Footer";
-import { faq, gallery } from "@/lib/content";
+import { faq } from "@/lib/content";
+import { getGalleryItems } from "@/lib/galleryData";
 import { homeImageSlots } from "@/lib/homeImageSlots";
+import { homeImageDefaults } from "@/lib/homeImageDefaults";
 import { imageUrl } from "@/lib/imageStorage";
 import { prisma } from "@/lib/prisma";
 import { getCalculatorOptions } from "@/lib/calculatorOptionsData";
 import { getServiceBlocks } from "@/lib/serviceBlocksData";
+import { getPriceData } from "@/lib/priceData";
+import { faqJsonLd, localBusinessJsonLd } from "@/lib/structuredData";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Специализированный-клининг — уборка квартир, домов и офисов в Минске",
+  description:
+    "Заказать уборку в Минске и по всей Беларуси: генеральная и поддерживающая уборка, спецуборка после пожара/потопа, мойка окон, уборка офисов. Работаем 24/7, честные цены, быстрый выезд.",
+  alternates: { canonical: "/" },
+};
 
 export const revalidate = 600;
 
@@ -45,18 +57,23 @@ const getReviews = unstable_cache(
 );
 
 export default async function Home() {
-  const [images, promos, serviceBlocks, calculatorOptions, reviews] = await Promise.all([
+  const [images, promos, serviceBlocks, calculatorOptions, reviews, priceData, galleryItems] = await Promise.all([
     getHomeImages(),
     getPromos(),
     getServiceBlocks(),
     getCalculatorOptions(),
     getReviews(),
+    getPriceData(),
+    getGalleryItems(),
   ]);
   const bigServices = serviceBlocks.filter((b) => b.size === "BIG");
   const smallServices = serviceBlocks.filter((b) => b.size === "SMALL");
   const src = (key: string) => {
     const img = images.find((i) => i.key === key);
-    return img ? imageUrl(key, img.updatedAt) : undefined;
+    // Admin-uploaded image (S3) wins; otherwise fall back to a static poster
+    // default if the slot has one, else undefined (renders a placeholder).
+    if (img) return imageUrl(key, img.updatedAt);
+    return homeImageDefaults[key as keyof typeof homeImageDefaults];
   };
 
   const servicesImageSrcBySlot: Record<string, string> = {};
@@ -68,21 +85,23 @@ export default async function Home() {
     if (slot.key.startsWith("staff-")) specialistsImageSrcBySlot[slot.key] = url;
   }
 
-  const galleryItems = gallery.map((item) => ({
-    ...item,
-    beforeSrc: src(`${item.slotId}-before`),
-    afterSrc: src(`${item.slotId}-after`),
-  }));
-
   return (
     <div className="min-h-screen bg-bg text-ink">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd()) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faq)) }}
+      />
       <Header />
       <Nav />
-      <Hero />
+      <Hero imageSrc={src("hero-home")} />
       <WhyUs reason1Src={src("why-us-reason1")} reason2Src={src("why-us-reason2")} />
       <Promotions promos={promos} />
       <ServicesDetail bigServices={bigServices} smallServices={smallServices} imageSrcBySlot={servicesImageSrcBySlot} />
-      <Pricing />
+      <Pricing priceData={priceData} />
       <CalculatorDetailed options={calculatorOptions} />
       <Gallery title="Примеры работ" items={galleryItems} />
       <CtaBanner

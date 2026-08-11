@@ -6,31 +6,98 @@ type DropdownItem = { label: string; href: string };
 type NavItem = { label: string; href?: string; dropdown?: DropdownItem[] };
 type ServiceBlockLite = { slotId: string; items: string[] };
 
-const toDropdown = (items: string[], href = "/#catalog"): DropdownItem[] =>
-  items.map((label) => ({ label, href }));
+// Every dropdown label below now has a real DB-backed page served by the
+// dynamic app/[slug] route. Each map turns a menu label into its slug;
+// hrefFrom() falls back to the catalog section for any unmatched label.
+const hrefFrom = (map: Record<string, string>) => (label: string) => map[label] ?? "/#catalog";
 
-// "Мойка витрин" has its own dedicated page now; the rest of the window
-// services still land on the catalog section until they get one too.
-const windowServiceHref = (label: string) => (label === "Мойка витрин" ? "/moyka-vitrin" : "/#catalog");
-
-// Same idea for the apartment-cleaning subcategories that now have real
-// pages. These are DB-backed service pages served by the dynamic
-// app/[slug] route. The rest of this dropdown's items still land on the
-// catalog section until they get dedicated pages too.
-const flatServiceHref = (label: string) => {
-  if (label === "Генеральная") return "/generalnaya-uborka";
-  if (label === "Поддерживающая") return "/podderzhivayuschaya-uborka";
-  if (label === "Срочная уборка") return "/srochnaya-uborka";
-  if (label === "Ежедневная") return "/ezhednevnaya-uborka";
-  if (label === "Разовая") return "/razovaya-uborka";
-  if (label === "Однокомнатной") return "/odnokomnatnaya-kvartira";
-  if (label === "Уборка кухни") return "/uborka-kuhni";
-  if (label === "Антисанитарных квартир") return "/uborka-antisanitarnoy-kvartiry";
-  return "/#catalog";
+const windowServiceSlugs: Record<string, string> = {
+  "Мойка витрин": "/moyka-vitrin",
+  "Сезонная": "/sezonnaya-mojka-okon",
+  "После ремонта": "/mojka-okon-posle-remonta",
+  "В квартире": "/mojka-okon-v-kvartire",
+  "В доме": "/mojka-okon-v-dome",
+  "В офисе": "/mojka-okon-v-ofise",
 };
+const windowServiceHref = hrefFrom(windowServiceSlugs);
 
-// Same idea for the room-cleaning subcategories.
-const roomServiceHref = (label: string) => (label === "Офисов" ? "/uborka-ofisov" : "/#catalog");
+const houseServiceSlugs: Record<string, string> = {
+  "Генеральная": "/generalnaya-uborka-doma",
+  "Точечная": "/tochechnaya-uborka-doma",
+  "Срочная": "/srochnaya-uborka-doma",
+  "Коттедж": "/uborka-kottedzha",
+  "Дача": "/uborka-dachi",
+  "После ремонта": "/uborka-doma-posle-remonta",
+};
+const houseServiceHref = hrefFrom(houseServiceSlugs);
+
+const incidentServiceSlugs: Record<string, string> = {
+  "После пожара": "/uborka-posle-pozhara",
+  "После потопа": "/uborka-posle-potopa",
+  "После прорыва канализации": "/uborka-posle-proryva-kanalizacii",
+  "Слив воды с натяжного потолка": "/sliv-vody-s-natyazhnogo-potolka",
+  "Удаление плесени": "/udalenie-pleseni",
+  "После гибели домашнего питомца": "/uborka-posle-gibeli-pitomca",
+  "Тротуарная плитка": "/ochistka-trotuarnoy-plitki",
+  "Запущенные помещения": "/uborka-zapushchennyh-pomeshcheniy",
+  "Дезинфекция": "/dezinfekciya",
+  "Расчистка участка": "/raschistka-uchastka",
+  "После смерти человека": "/uborka-posle-smerti",
+  "Удаление запахов": "/udalenie-zapahov",
+  "Уборка очень грязных квартир": "/uborka-ochen-gryaznyh-kvartir",
+  "Уборка после Плюшкина": "/uborka-posle-plyushkina",
+  "Антисанитарные помещения": "/uborka-antisanitarnyh-pomeshcheniy",
+  "После алкоголиков": "/uborka-posle-alkogolikov",
+  "После больных людей": "/uborka-posle-bolnyh-lyudey",
+  "Вывоз мусора": "/vyvoz-musora",
+  "Демонтаж": "/demontazh",
+  "Травля насекомых": "/travlya-nasekomyh",
+  "Голубиный помет": "/uborka-golubinogo-pometa",
+  "Холодный туман": "/obrabotka-holodnym-tumanom",
+};
+const incidentServiceHref = hrefFrom(incidentServiceSlugs);
+
+const flatServiceSlugs: Record<string, string> = {
+  "Генеральная": "/generalnaya-uborka",
+  "Ежедневная": "/ezhednevnaya-uborka",
+  "Точечная": "/tochechnaya-uborka",
+  "Разовая": "/razovaya-uborka",
+  "Поддерживающая": "/podderzhivayuschaya-uborka",
+  "После ремонта": "/uborka-kvartiry-posle-remonta",
+  "Комплексная": "/kompleksnaya-uborka-kvartiry",
+  "Срочная уборка": "/srochnaya-uborka",
+  "После аренды": "/uborka-posle-arendy",
+  "Однокомнатной": "/odnokomnatnaya-kvartira",
+  "Двухкомнатной": "/dvuhkomnatnaya-kvartira",
+  "Трехкомнатной": "/trehkomnatnaya-kvartira",
+  "Четырехкомнатной": "/chetyrehkomnatnaya-kvartira",
+  "Уборка кухни": "/uborka-kuhni",
+  "Уборка ванной": "/uborka-vannoy-komnaty",
+  "Антисанитарных квартир": "/uborka-antisanitarnoy-kvartiry",
+  "Запущенных квартир": "/uborka-zapushchennoy-kvartiry",
+  "Уборка балкона": "/uborka-balkona",
+};
+const flatServiceHref = hrefFrom(flatServiceSlugs);
+
+const roomServiceSlugs: Record<string, string> = {
+  "Офисов": "/uborka-ofisov",
+  "Бизнес-центров": "/uborka-biznes-centrov",
+  "Торговых центров": "/uborka-torgovyh-centrov",
+  "Салонов красоты": "/uborka-salonov-krasoty",
+  "Медицинских центров": "/uborka-medicinskih-centrov",
+  "Ресторанов и кафе": "/uborka-restoranov-i-kafe",
+  "Служебных помещений": "/uborka-sluzhebnyh-pomeshcheniy",
+  "Производственных помещений": "/uborka-proizvodstvennyh-pomeshcheniy",
+  "Учебных заведений": "/uborka-uchebnyh-zavedeniy",
+  "Нежилых": "/uborka-nezhilyh-pomeshcheniy",
+  "Складских помещений": "/uborka-skladskih-pomeshcheniy",
+  "Паркинга": "/uborka-parkinga",
+  "Автосалонов": "/uborka-avtosalonov",
+  "Фитнес клубов": "/uborka-fitnes-klubov",
+  "Магазинов": "/uborka-magazinov",
+  "Бассейнов, бани и сауны": "/uborka-basseynov-bani-i-sauny",
+};
+const roomServiceHref = hrefFrom(roomServiceSlugs);
 
 function itemsFor(blocks: ServiceBlockLite[], slotId: string): string[] {
   return blocks.find((b) => b.slotId === slotId)?.items ?? [];
@@ -99,26 +166,31 @@ export default function NavClient({ serviceBlocks }: { serviceBlocks: ServiceBlo
       label: "Уборка квартир",
       dropdown: itemsFor(serviceBlocks, "svc-flats").map((label) => ({ label, href: flatServiceHref(label) })),
     },
-    { label: "Уборка домов", dropdown: toDropdown(itemsFor(serviceBlocks, "svc-houses")) },
+    {
+      label: "Уборка домов",
+      dropdown: itemsFor(serviceBlocks, "svc-houses").map((label) => ({ label, href: houseServiceHref(label) })),
+    },
     {
       label: "Уборка помещений",
       dropdown: itemsFor(serviceBlocks, "svc-rooms").map((label) => ({ label, href: roomServiceHref(label) })),
     },
-    { label: "Спецуборка", dropdown: toDropdown(itemsFor(serviceBlocks, "svc-incidents")) },
+    {
+      label: "Спецуборка",
+      dropdown: itemsFor(serviceBlocks, "svc-incidents").map((label) => ({ label, href: incidentServiceHref(label) })),
+    },
     {
       label: "Окна",
       dropdown: itemsFor(serviceBlocks, "svc-windows").map((label) => ({ label, href: windowServiceHref(label) })),
     },
-    { label: "Новости" },
     {
       label: "О компании",
       dropdown: [
-        { label: "Почему выбирают нас", href: "/#services" },
-        { label: "Наши специалисты", href: "/#specialists" },
-        { label: "Отзывы клиентов", href: "/#reviews" },
+        { label: "О компании", href: "/o-kompanii" },
+        { label: "Почему выбирают нас", href: "/pochemu-vybirayut-nas" },
+        { label: "Наши гарантии", href: "/nashi-garantii" },
       ],
     },
-    { label: "Контакты", href: "/#order" },
+    { label: "Контакты", href: "/contacts" },
   ];
 
   const cancelClose = () => {

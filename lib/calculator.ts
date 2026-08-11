@@ -19,7 +19,7 @@ export type Calc2State = {
   desiredTime: string | null;
 };
 
-export type CalculatorOptionRow = { key: string; label: string; value: number };
+export type CalculatorOptionRow = { key: string; label: string; value: number; isFixed: boolean };
 
 export type CalculatorOptionsByField = {
   OBJECT_TYPE: CalculatorOptionRow[];
@@ -31,18 +31,24 @@ export type CalculatorOptionsByField = {
   EXTRA: CalculatorOptionRow[];
 };
 
+// Each option carries its value plus whether that value is a multiplier or a
+// flat ruble amount (isFixed), so the price formula can treat them differently.
+export type OptionMeta = { value: number; isFixed: boolean };
+type MetaRecord = Record<string, OptionMeta>;
+
 export type CalculatorCoefficients = {
-  objectType: Record<string, number>;
-  dirt: Record<string, number>;
-  buildingType: Record<string, number>;
-  region: Record<string, number>;
-  urgency: Record<string, number>;
-  staff: Record<string, number>;
-  extra: Record<string, number>;
+  objectType: MetaRecord;
+  dirt: MetaRecord;
+  buildingType: MetaRecord;
+  region: MetaRecord;
+  urgency: MetaRecord;
+  staff: MetaRecord;
+  extra: MetaRecord;
 };
 
 export function coefficientsFrom(options: CalculatorOptionsByField): CalculatorCoefficients {
-  const toRecord = (rows: CalculatorOptionRow[]) => Object.fromEntries(rows.map((r) => [r.key, r.value]));
+  const toRecord = (rows: CalculatorOptionRow[]): MetaRecord =>
+    Object.fromEntries(rows.map((r) => [r.key, { value: r.value, isFixed: r.isFixed }]));
   return {
     objectType: toRecord(options.OBJECT_TYPE),
     dirt: toRecord(options.DIRT),
@@ -52,6 +58,17 @@ export function coefficientsFrom(options: CalculatorOptionsByField): CalculatorC
     staff: toRecord(options.STAFF),
     extra: toRecord(options.EXTRA),
   };
+}
+
+// A selected option contributes either a multiplier (neutral 1 when it's a
+// fixed-price option or missing) or a flat ruble add (0 unless it's fixed).
+function mult(rec: MetaRecord, key: string): number {
+  const m = rec[key];
+  return m && !m.isFixed ? m.value : 1;
+}
+function fixed(rec: MetaRecord, key: string): number {
+  const m = rec[key];
+  return m && m.isFixed ? m.value : 0;
 }
 
 export function labelFor(rows: CalculatorOptionRow[], key: string): string {
@@ -79,16 +96,36 @@ export function toDateInputString(date: Date) {
 const BASE_PER_SEVERITY_POINT = 40;
 
 export function computeCalc2(state: Calc2State, coef: CalculatorCoefficients) {
-  const extrasSum = Object.keys(state.extras).reduce(
-    (sum, key) => sum + (state.extras[key] ? (coef.extra[key] ?? 0) : 0),
-    0,
-  );
-  const severityFactor = (coef.dirt[state.dirt] ?? 1) * (coef.objectType[state.objectType] ?? 1);
-  const raw =
-    (BASE_PER_SEVERITY_POINT * state.severity * severityFactor * (coef.region[state.region] ?? 1) + extrasSum) *
-    (coef.buildingType[state.buildingType] ?? 1) *
-    (coef.urgency[state.urgency] ?? 1);
+  // Extras (multi-select): fixed ones add rubles, multiplier ones multiply.
+  let extrasFixedSum = 0;
+  let extrasMultiplier = 1;
+  for (const key of Object.keys(state.extras)) {
+    if (!state.extras[key]) continue;
+    const m = coef.extra[key];
+    if (!m) continue;
+    if (m.isFixed) extrasFixedSum += m.value;
+    else extrasMultiplier *= m.value;
+  }
+
+  const severityFactor = mult(coef.dirt, state.dirt) * mult(coef.objectType, state.objectType);
+
+  let raw =
+    (BASE_PER_SEVERITY_POINT * state.severity * severityFactor * mult(coef.region, state.region) + extrasFixedSum) *
+    mult(coef.buildingType, state.buildingType) *
+    mult(coef.urgency, state.urgency) *
+    extrasMultiplier;
+
+  // Fixed-price single-selects add a flat amount on top, outside the multipliers.
+  raw +=
+    fixed(coef.dirt, state.dirt) +
+    fixed(coef.objectType, state.objectType) +
+    fixed(coef.region, state.region) +
+    fixed(coef.buildingType, state.buildingType) +
+    fixed(coef.urgency, state.urgency) +
+    fixed(coef.staff, state.staff);
+
   const price = Math.max(150, Math.round(raw));
-  const time = Math.max(1, Math.round(((state.severity / 2) * severityFactor) / (coef.staff[state.staff] ?? 1)));
+  // Staff is a time divider; a fixed-price staff option divides by 1 (mult()).
+  const time = Math.max(1, Math.round(((state.severity / 2) * severityFactor) / mult(coef.staff, state.staff)));
   return { price, time };
 }

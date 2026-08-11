@@ -10,6 +10,26 @@ import MidPageCta from "./MidPageCta";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import { howToOrder, seoText, serviceFaq, team } from "@/lib/serviceCategoryContent";
 
+// Small pool of eyebrow slogans so the hero doesn't read identically on every
+// service page. Picked deterministically from the title so a given page always
+// shows the same one (stable across ISR re-renders), but neighbours differ.
+const eyebrowSlogans = [
+  "Клининг по всей Беларуси",
+  "Работаем 24/7 — без выходных",
+  "Выезд в день обращения",
+  "Чистота под ключ",
+  "Убираем то, за что не берутся другие",
+  "Честные цены, идеальный результат",
+  "Своя бригада, техника и химия",
+  "Более 1000 довольных клиентов",
+];
+
+function pickEyebrow(title: string): string {
+  let hash = 0;
+  for (let i = 0; i < title.length; i++) hash = (hash + title.charCodeAt(i)) % eyebrowSlogans.length;
+  return eyebrowSlogans[hash];
+}
+
 type TeamMember = {
   id: string;
   name: string;
@@ -57,7 +77,7 @@ export default function ServiceCategoryPage({
 
           <div className="relative flex h-full flex-col justify-center px-6 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-15">
             <div className="mb-3 text-xs font-extrabold tracking-[2px] text-primary uppercase sm:mb-4.5 sm:text-sm sm:tracking-[3px]">
-              Клининг по всей Беларуси
+              {pickEyebrow(title)}
             </div>
             <h1 className="mb-4 text-[28px] leading-[1.05] font-extrabold text-white sm:mb-6 sm:text-[40px] lg:text-[48px]">
               {title}
@@ -132,7 +152,7 @@ export default function ServiceCategoryPage({
 
       <Faq title="Вопросы и ответы" items={serviceFaq} defaultOpenIndex={0} />
 
-      <section className="px-4 pb-10 sm:px-6 sm:pb-14 lg:px-10">
+      <section className="px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-14 lg:px-10">
         <div className="mx-auto max-w-200 text-sm leading-relaxed text-muted sm:text-[15px]">
           <ReadMore>
             {seoText.map((p) => (

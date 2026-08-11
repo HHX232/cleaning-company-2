@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { deriveStatus, kindPresentationFor, statusPresentation } from "@/lib/orderStatus";
-import { advanceOrderStatus, createOrder, deleteOrder, updateOrderSchedule } from "./actions";
+import { advanceOrderStatus, createOrder, deleteOrder, updateOrderFull } from "./actions";
 import OrderRow from "@/components/admin/OrderRow";
 
 const kindOptions: { value: string; label: string }[] = [
@@ -22,21 +22,22 @@ const nextAction: Record<string, { action: "assign" | "complete" | "pay"; label:
 };
 
 export default async function AdminOrdersPage() {
+  // Every account, all roles — an ADMIN testing the calculator/chat places
+  // real orders too (previously ADMIN was excluded here, which hid those
+  // orders), and BANNED users keep their in-flight orders manageable
+  // (banning only blocks their future sign-ins). Sorted so accounts with
+  // orders surface first.
   const customers = await prisma.user.findMany({
-    // Include BANNED so a banned customer's existing orders (e.g. still
-    // "в процессе") stay manageable here — banning only blocks their own
-    // future sign-ins/orders, not admin's ability to finish work already
-    // in flight. ADMIN accounts don't place customer orders, excluded.
-    where: { role: { in: ["USER", "BANNED"] } },
     include: { orders: { orderBy: { date: "desc" } } },
     orderBy: { email: "asc" },
   });
+  customers.sort((a, b) => b.orders.length - a.orders.length);
 
   return (
     <div className="mx-auto max-w-250">
       <h1 className="mb-6 text-xl font-extrabold text-ink">Заказы</h1>
 
-      {customers.length === 0 && <p className="text-sm text-muted">Пока нет зарегистрированных клиентов.</p>}
+      {customers.length === 0 && <p className="text-sm text-muted">Пока нет зарегистрированных пользователей.</p>}
 
       <div className="flex flex-col gap-6">
         {customers.map((customer) => (
@@ -63,12 +64,13 @@ export default async function AdminOrdersPage() {
                     statusLabel={presentation.label}
                     statusBgClass={presentation.bgClass}
                     statusTextClass={presentation.textClass}
+                    kindOptions={kindOptions}
                     advance={advance}
                     needsPayment={needsPayment}
                     canCancel={canCancel}
                     advanceOrderStatus={advanceOrderStatus}
                     deleteOrder={deleteOrder}
-                    updateOrderSchedule={updateOrderSchedule}
+                    updateOrderFull={updateOrderFull}
                   />
                 );
               })}

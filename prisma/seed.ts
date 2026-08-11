@@ -4,71 +4,41 @@ import path from "node:path";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { putImage } from "../lib/imageStorage";
+import { servicePages as pages, serviceBlocks, galleryItems } from "./seedData";
 
 const prisma = new PrismaClient();
 
-const heroDescription = "Доступны 24/7 — уборка тогда, когда это нужно Вам! Все клининговые услуги в одном месте.";
-const flatsCategory = { breadcrumbCategoryLabel: "Уборка квартир в Минcке", breadcrumbCategoryHref: "/uborka-kvartir" };
 
-const pages = [
-  {
-    slug: "generalnaya-uborka",
-    title: "Генеральная уборка квартиры",
-    heroDescription,
-    ...flatsCategory,
-    showFeaturesBlock: true,
-    featureTags: ["Мытьё полов и окон", "Чистка сантехники", "Уборка пыли и поверхностей", "Вынос мусора"],
-    showProcessSteps: false,
-    showMidBanner: false,
-  },
-  {
-    slug: "ezhednevnaya-uborka",
-    title: "Ежедневная уборка квартиры",
-    heroDescription,
-    ...flatsCategory,
-    showFeaturesBlock: true,
-    featureTags: ["Ежедневная поддержка чистоты", "Мытьё посуды и кухни", "Влажная уборка полов", "Вынос мусора"],
-    showProcessSteps: false,
-    showMidBanner: false,
-  },
-  {
-    slug: "podderzhivayuschaya-uborka",
-    title: "Поддерживающая уборка квартиры",
-    heroDescription,
-    ...flatsCategory,
-    showFeaturesBlock: true,
-    featureTags: ["Регулярная поддержка чистоты", "Уборка кухни и санузла", "Протирка пыли", "Мытьё полов"],
-    showProcessSteps: false,
-    showMidBanner: false,
-  },
-  {
-    slug: "razovaya-uborka",
-    title: "Разовая уборка квартиры",
-    heroDescription,
-    ...flatsCategory,
-    showFeaturesBlock: true,
-    featureTags: ["Разовый выезд бригады", "Уборка под ключ", "Мытьё окон и полов", "Вынос мусора"],
-    showProcessSteps: false,
-    showMidBanner: false,
-  },
-  {
-    slug: "uborka-ofisov",
-    title: "Уборка офисов",
-    heroDescription,
-    breadcrumbCategoryLabel: "Уборка коммерческих помещений",
-    breadcrumbCategoryHref: "/uborka-kommercheskih-pomeshhenij",
-    showFeaturesBlock: true,
-    featureTags: ["Уборка рабочих мест", "Мытьё полов и окон", "Чистка санузлов", "Вынос мусора"],
-    showProcessSteps: true,
-    showMidBanner: true,
-  },
-];
 
 const teamMembers = [
   { name: "Кирилл", role: "Старший специалист по уборке", order: 0 },
   { name: "Юрий", role: "Координатор экстренных уборок", order: 1 },
   { name: "Татьяна", role: "Эксперт по генеральной уборке", order: 2 },
   { name: "Александр", role: "Мастер по очистке после ЧП", order: 3 },
+];
+
+const priceRows = [
+  { tab: "flats", name: "Генеральная", price: "от 100 руб.", order: 0 },
+  { tab: "flats", name: "Поддерживающая", price: "от 100 руб.", order: 1 },
+  { tab: "flats", name: "Ежедневная", price: "от 100 руб.", order: 2 },
+  { tab: "flats", name: "Точечная", price: "от 100 руб.", order: 3 },
+  { tab: "flats", name: "Разовая", price: "от 100 руб.", order: 4 },
+  { tab: "flats", name: "После ремонта", price: "от 200 руб.", order: 5 },
+  { tab: "flats", name: "После аренды", price: "договорная", order: 6 },
+  { tab: "flats", name: "Однокомнатной", price: "от 100 руб.", order: 7 },
+  { tab: "flats", name: "Двухкомнатной", price: "от 150 руб.", order: 8 },
+  { tab: "houses", name: "Генеральная", price: "от 150 руб.", order: 0 },
+  { tab: "houses", name: "После ремонта", price: "от 250 руб.", order: 1 },
+  { tab: "houses", name: "Коттедж", price: "договорная", order: 2 },
+  { tab: "houses", name: "Дача", price: "от 120 руб.", order: 3 },
+  { tab: "rooms", name: "Уборка офисов", price: "от 120 руб.", order: 0 },
+  { tab: "rooms", name: "Бизнес-центры", price: "договорная", order: 1 },
+  { tab: "rooms", name: "Рестораны и кафе", price: "от 150 руб.", order: 2 },
+  { tab: "special", name: "После пожара/потопа", price: "договорная", order: 0 },
+  { tab: "special", name: "После смерти", price: "договорная", order: 1 },
+  { tab: "special", name: "Удаление плесени", price: "от 100 руб.", order: 2 },
+  { tab: "windows", name: "Мойка окон", price: "от 80 руб.", order: 0 },
+  { tab: "windows", name: "Мойка витрин", price: "от 100 руб.", order: 1 },
 ];
 
 const promos = [
@@ -92,65 +62,6 @@ const promos = [
   },
 ];
 
-const serviceBlocks = [
-  {
-    size: "BIG" as const,
-    title: "Уборка после происшествий",
-    slotId: "svc-incidents",
-    columns: 2,
-    order: 0,
-    items: [
-      "Уборка после пожара",
-      "Уборка после потопа",
-      "Уборка после прорыва канализации",
-      "Уборка после смерти человека",
-      "Уборка после смерти питомца",
-      "Уборка запущенных квартир",
-      "Вывоз мусора",
-      "Травля насекомых",
-      "Удаление плесени",
-    ],
-  },
-  {
-    size: "BIG" as const,
-    title: "Мойка окон",
-    slotId: "svc-windows",
-    columns: 1,
-    order: 1,
-    items: ["Сезонная мойка окон", "После ремонта", "Мойка витрин", "В доме", "В квартире", "В офисе"],
-  },
-  {
-    size: "SMALL" as const,
-    title: "Уборка квартир",
-    slotId: "svc-flats",
-    columns: 1,
-    order: 0,
-    items: ["Генеральная", "После ремонта", "Срочная уборка", "Точечная", "Поддерживающая", "После аренды"],
-  },
-  {
-    size: "SMALL" as const,
-    title: "Уборка домов",
-    slotId: "svc-houses",
-    columns: 1,
-    order: 1,
-    items: ["Генеральная", "После ремонта", "Точечная", "Срочная уборка", "Коттедж", "Дача"],
-  },
-  {
-    size: "SMALL" as const,
-    title: "Уборка помещений",
-    slotId: "svc-rooms",
-    columns: 1,
-    order: 2,
-    items: [
-      "Уборка офисов",
-      "Уборка бизнес-центров",
-      "Рестораны и кафе",
-      "Производственные помещения",
-      "Нежилые помещения",
-      "Салоны красоты",
-    ],
-  },
-];
 
 const calculatorOptions = [
   // OBJECT_TYPE — multiplier
@@ -179,12 +90,12 @@ const calculatorOptions = [
   { field: "STAFF" as const, key: "2", label: "2 человека", value: 1.6, order: 1 },
   { field: "STAFF" as const, key: "3", label: "Бригада 3+", value: 2.4, order: 2 },
   // EXTRA — flat ruble price
-  { field: "EXTRA" as const, key: "ozone", label: "Озонирование", value: 25, order: 0 },
-  { field: "EXTRA" as const, key: "generalCleaning", label: "Генеральная уборка", value: 30, order: 1 },
-  { field: "EXTRA" as const, key: "trash", label: "Вывоз мусора", value: 15, order: 2 },
-  { field: "EXTRA" as const, key: "chemistry", label: "Химия", value: 20, order: 3 },
-  { field: "EXTRA" as const, key: "odorRemoval", label: "Устранение запаха", value: 20, order: 4 },
-  { field: "EXTRA" as const, key: "pestControl", label: "Уничтожение насекомых", value: 35, order: 5 },
+  { field: "EXTRA" as const, isFixed: true, key: "ozone", label: "Озонирование", value: 25, order: 0 },
+  { field: "EXTRA" as const, isFixed: true, key: "generalCleaning", label: "Генеральная уборка", value: 30, order: 1 },
+  { field: "EXTRA" as const, isFixed: true, key: "trash", label: "Вывоз мусора", value: 15, order: 2 },
+  { field: "EXTRA" as const, isFixed: true, key: "chemistry", label: "Химия", value: 20, order: 3 },
+  { field: "EXTRA" as const, isFixed: true, key: "odorRemoval", label: "Устранение запаха", value: 20, order: 4 },
+  { field: "EXTRA" as const, isFixed: true, key: "pestControl", label: "Уничтожение насекомых", value: 35, order: 5 },
 ];
 
 const reviews = [
@@ -257,6 +168,18 @@ async function main() {
   if ((await prisma.review.count()) === 0) {
     await prisma.review.createMany({ data: reviews });
     console.log(`Seeded ${reviews.length} reviews.`);
+  }
+
+  if ((await prisma.priceRow.count()) === 0) {
+    await prisma.priceRow.createMany({ data: priceRows });
+    console.log(`Seeded ${priceRows.length} price rows.`);
+  }
+
+  if ((await prisma.galleryItem.count()) === 0) {
+    for (const item of galleryItems) {
+      await prisma.galleryItem.create({ data: { title: item.title, meta: item.meta, order: item.order } });
+    }
+    console.log(`Seeded ${galleryItems.length} gallery items.`);
   }
 
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });

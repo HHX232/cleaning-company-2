@@ -19,7 +19,12 @@ export const getCalculatorOptions = unstable_cache(
       // field is a plain string column now (SQLite) — skip any value that
       // isn't one of the known groups rather than crashing.
       if ((CALCULATOR_FIELDS as readonly string[]).includes(row.field)) {
-        grouped[row.field as CalculatorField].push({ key: row.key, label: row.label, value: row.value });
+        grouped[row.field as CalculatorField].push({
+          key: row.key,
+          label: row.label,
+          value: row.value,
+          isFixed: row.isFixed,
+        });
       }
     }
     return grouped;

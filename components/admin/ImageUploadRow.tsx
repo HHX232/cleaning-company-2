@@ -3,9 +3,9 @@ type ImageUploadRowProps = {
   label: string;
   currentSrc?: string;
   redirectTo: string;
-  targetTable?: "teamMember" | "servicePage";
+  targetTable?: "teamMember" | "servicePage" | "galleryItem";
   targetId?: string;
-  targetField?: "photoUrl" | "heroImageUrl" | "consultationImageUrl";
+  targetField?: "photoUrl" | "heroImageUrl" | "consultationImageUrl" | "beforeUrl" | "afterUrl";
 };
 
 export default function ImageUploadRow({

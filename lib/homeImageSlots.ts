@@ -2,6 +2,7 @@
 // source of truth for both app/page.tsx (which keys to fetch) and the
 // admin dashboard (which upload rows to render).
 export const homeImageSlots = [
+  { key: "hero-home", section: "Главный экран (Hero)", label: "Фоновое фото" },
   { key: "why-us-reason1", section: "Причины заказать уборку", label: "Фото 1 (крупное)" },
   { key: "why-us-reason2", section: "Причины заказать уборку", label: "Фото 2" },
   { key: "svc-incidents", section: "Наши услуги", label: "Уборка после происшествий" },
@@ -9,10 +10,6 @@ export const homeImageSlots = [
   { key: "svc-flats", section: "Наши услуги", label: "Уборка квартир" },
   { key: "svc-houses", section: "Наши услуги", label: "Уборка домов" },
   { key: "svc-rooms", section: "Наши услуги", label: "Уборка помещений" },
-  { key: "gallery-kitchen-before", section: "Примеры работ", label: "Кухня — до" },
-  { key: "gallery-kitchen-after", section: "Примеры работ", label: "Кухня — после" },
-  { key: "gallery-pool-before", section: "Примеры работ", label: "Бассейн — до" },
-  { key: "gallery-pool-after", section: "Примеры работ", label: "Бассейн — после" },
   { key: "staff-1", section: "Наша команда", label: "Клинер-универсал" },
   { key: "staff-2", section: "Наша команда", label: "Бригадир" },
   { key: "staff-3", section: "Наша команда", label: "Специалист по спецуборке" },

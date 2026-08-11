@@ -11,10 +11,11 @@ const serviceLinks = [
   { label: "Спецуборка", href: "/#catalog" },
 ];
 const companyLinks = [
-  { label: "О компании", href: "/#services" },
-  { label: "Новости", href: null },
+  { label: "О компании", href: "/o-kompanii" },
+  { label: "Почему выбирают нас", href: "/pochemu-vybirayut-nas" },
+  { label: "Наши гарантии", href: "/nashi-garantii" },
   { label: "Цены", href: "/#prices" },
-  { label: "Контакты", href: "/#order" },
+  { label: "Контакты", href: "/contacts" },
 ];
 
 type FooterProps = {
@@ -31,11 +32,13 @@ export default function Footer({ id }: FooterProps) {
             <Image
               src="/images/logos/specializirovanny-cleaning-logo-green (4).svg"
               alt={company.name}
-              width={72}
-              height={72}
-              className="h-16 w-16 shrink-0 rounded-xl object-contain"
+              width={96}
+              height={96}
+              className="h-24 w-24 shrink-0 rounded-xl object-contain sm:h-16 sm:w-16"
             />
-            <span className="text-[15px] leading-tight font-extrabold text-white">{company.name}</span>
+            <span className="hidden text-[15px] leading-tight font-extrabold text-white sm:inline">
+              {company.name}
+            </span>
           </div>
           <p className="text-[13px] leading-relaxed text-[#b8b8b8]">
             Клининговая компания полного цикла. Работаем по всей Беларуси, на связи 24/7.
@@ -110,9 +113,14 @@ export default function Footer({ id }: FooterProps) {
       </div>
       <div className="mx-auto flex max-w-[1200px] flex-wrap justify-between gap-2 border-t border-white/[0.12] pt-5 text-xs text-[#8a8a8a]">
         <span>© 2026 {company.name}. Все права защищены.</span>
-        <Link href="/privacy" className="transition-colors hover:text-white">
-          Политика конфиденциальности
-        </Link>
+        <div className="flex flex-wrap gap-x-4 gap-y-1">
+          <Link href="/privacy" className="transition-colors hover:text-white">
+            Политика конфиденциальности
+          </Link>
+          <Link href="/terms" className="transition-colors hover:text-white">
+            Пользовательское соглашение
+          </Link>
+        </div>
       </div>
     </footer>
   );

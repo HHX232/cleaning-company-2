@@ -30,7 +30,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link href="/admin/users">Пользователи</Link>
           <Link href="/admin/promos">Акции</Link>
           <Link href="/admin/services">Услуги</Link>
+          <Link href="/admin/gallery">Примеры работ</Link>
           <Link href="/admin/calculator">Калькулятор</Link>
+          <Link href="/admin/prices">Цены</Link>
           <Link href="/admin/reviews">Отзывы</Link>
           <Link href="/admin/chats">Чаты</Link>
           <Link href="/admin/callbacks">Заявки на звонок</Link>

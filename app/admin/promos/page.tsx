@@ -6,7 +6,11 @@ export default async function AdminPromosPage() {
 
   return (
     <div className="mx-auto max-w-200">
-      <h1 className="mb-6 text-xl font-extrabold text-ink">Наши акции</h1>
+      <h1 className="mb-1 text-xl font-extrabold text-ink">Наши акции</h1>
+      <p className="mb-6 text-sm text-muted">
+        Карточки в блоке «Наши акции» на главной. Значок — бейдж (например «-10%»), «Порядок» — число для сортировки
+        (меньше — выше).
+      </p>
 
       <div className="mb-2 hidden gap-2 px-4 text-[11px] font-bold text-muted uppercase sm:grid sm:grid-cols-[100px_1fr_2fr_70px_auto]">
         <span>Значок</span>
@@ -48,7 +52,7 @@ export default async function AdminPromosPage() {
             <input
               type="number"
               name="order"
-              defaultValue={promo.order}
+              title="Порядок сортировки" defaultValue={promo.order}
               className="rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-ink"
             />
             <div className="flex gap-2">
@@ -94,7 +98,7 @@ export default async function AdminPromosPage() {
           <input
             type="number"
             name="order"
-            placeholder="0"
+            title="Порядок сортировки" placeholder="0"
             defaultValue={0}
             className="rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-ink"
           />

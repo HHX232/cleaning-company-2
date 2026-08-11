@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { useContactModal } from "./ContactModalProvider";
 
@@ -16,12 +17,25 @@ type ServicesDetailProps = {
   imageSrcBySlot?: Record<string, string>;
 };
 
+// Caps a block's checklist to 10 real items, plus an 11th "и другое" line
+// when there's more — an admin-editable list (see /admin/services) can grow
+// past what looks good in a card.
+const MAX_CHECKLIST_ITEMS = 10;
+function displayItems(items: string[]): string[] {
+  if (items.length <= MAX_CHECKLIST_ITEMS) return items;
+  return [...items.slice(0, MAX_CHECKLIST_ITEMS), "и другое"];
+}
+
 export default function ServicesDetail({ bigServices, smallServices, imageSrcBySlot = {} }: ServicesDetailProps) {
   const openContactModal = useContactModal();
 
   return (
     <section id="catalog" className="px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
-      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">Наши услуги</h2>
+      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">
+        <Link href="/#calculator" className="transition-colors hover:text-primary">
+          Наши услуги
+        </Link>
+      </h2>
 
       <div className="mx-auto mb-5 grid max-w-[1200px] grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
         {bigServices.map((svc) => (
@@ -38,7 +52,7 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
                 className="mb-4 grid gap-x-4 gap-y-1.5 sm:mb-5 sm:gap-x-5.5"
                 style={{ gridTemplateColumns: svc.columns === 2 ? "1fr 1fr" : "1fr" }}
               >
-                {svc.items.map((it) => (
+                {displayItems(svc.items).map((it) => (
                   <div key={it} className="flex items-start gap-2 text-[13px] leading-snug text-[#f0f0f0] sm:text-sm">
                     <span className="font-extrabold text-primary">✓</span>
                     {it}
@@ -69,7 +83,7 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
             <div className="relative px-5 py-5 sm:px-6 sm:py-5.5">
               <h3 className="mb-3 text-base font-extrabold text-white sm:mb-3.5 sm:text-[19px]">{svc.title}</h3>
               <div className="mb-4 flex flex-col gap-1.5 sm:mb-4.5">
-                {svc.items.map((it) => (
+                {displayItems(svc.items).map((it) => (
                   <div key={it} className="flex items-start gap-2 text-[13px] leading-snug text-[#f0f0f0]">
                     <span className="font-extrabold text-primary">✓</span>
                     {it}

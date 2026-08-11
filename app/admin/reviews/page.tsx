@@ -6,7 +6,11 @@ export default async function AdminReviewsPage() {
 
   return (
     <div className="mx-auto max-w-200">
-      <h1 className="mb-6 text-xl font-extrabold text-ink">Отзывы</h1>
+      <h1 className="mb-1 text-xl font-extrabold text-ink">Отзывы</h1>
+      <p className="mb-6 text-sm text-muted">
+        Отзывы в блоке «Отзывы» на главной. «Звёзды» — оценка 1–5, «Услуга» — подпись под отзывом, «Порядок» — число
+        для сортировки.
+      </p>
 
       <div className="mb-2 hidden gap-2 px-4 text-[11px] font-bold text-muted uppercase sm:grid sm:grid-cols-[70px_2fr_1.4fr_70px_auto]">
         <span>Оценка</span>
@@ -27,7 +31,7 @@ export default async function AdminReviewsPage() {
             <input
               type="number"
               name="stars"
-              min={1}
+              title="Оценка 1–5" min={1}
               max={5}
               defaultValue={review.stars}
               className="rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-ink"
@@ -49,7 +53,7 @@ export default async function AdminReviewsPage() {
             <input
               type="number"
               name="order"
-              defaultValue={review.order}
+              title="Порядок сортировки" defaultValue={review.order}
               className="rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-ink"
             />
             <div className="flex gap-2">
@@ -74,7 +78,7 @@ export default async function AdminReviewsPage() {
           <input
             type="number"
             name="stars"
-            min={1}
+            title="Оценка 1–5" min={1}
             max={5}
             defaultValue={5}
             className="rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-ink"
@@ -96,7 +100,7 @@ export default async function AdminReviewsPage() {
           <input
             type="number"
             name="order"
-            placeholder="0"
+            title="Порядок сортировки" placeholder="0"
             defaultValue={0}
             className="rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-ink"
           />

@@ -6,7 +6,11 @@ export default async function AdminServicesPage() {
 
   return (
     <div className="mx-auto max-w-200">
-      <h1 className="mb-6 text-xl font-extrabold text-ink">Наши услуги</h1>
+      <h1 className="mb-1 text-xl font-extrabold text-ink">Наши услуги</h1>
+      <p className="mb-6 text-sm text-muted">
+        Блоки-карточки в разделе «Наши услуги» на главной. Пункты списка — по одному на строку. «Порядок» — число для
+        сортировки блоков. На главной показывается максимум 10 пунктов + строка «и другое».
+      </p>
 
       <div className="mb-6 flex flex-col gap-3">
         {blocks.length === 0 && <p className="text-sm text-muted">Пока нет блоков услуг.</p>}
