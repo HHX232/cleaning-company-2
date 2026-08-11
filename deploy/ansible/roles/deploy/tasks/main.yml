@@ -156,12 +156,6 @@
     state: link
   notify: Reload nginx
 
-- name: Remove old site (cleaning)
-  ansible.builtin.file:
-    path: /etc/nginx/sites-enabled/cleaning
-    state: absent
-  notify: Reload nginx
-
 - name: Remove default site
   ansible.builtin.file:
     path: /etc/nginx/sites-enabled/default
