@@ -84,8 +84,8 @@ export const company = {
   name: "Специализированный-клининг",
   tagline: "Клининг квартир, домов и офисов",
   city: "Минск",
-  phone: "+375 29 232-52-09",
-  email: "info@specclean.by",
+  phone: "+375 25 790-54-70",
+  email: "speckliningbel@yandex.by",
 };
 
 // Separate from company.phone above (the direct-call line) — this is the
@@ -93,7 +93,7 @@ export const company = {
 const messengerPhone = "+375256432677";
 const messengerPhoneDigits = messengerPhone.replace(/\D/g, "");
 
-export const feedbackEmail = "mojkaokonbel@gmail.com";
+export const feedbackEmail = "speckliningbel@yandex.by";
 
 // "chat" scrolls to the contact block until an actual in-site chat ships
 // alongside the admin/orders backend.

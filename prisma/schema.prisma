@@ -256,6 +256,24 @@ model CallbackRequest {
   createdAt       DateTime  @default(now())
 }
 
+// "О компании" page content (app/o-kompanii), admin-editable at
+// /admin/about. Singleton row (id "about"). stats/values are Json arrays of
+// {value,label} / {title,text} so the admin can add or remove items freely.
+model AboutPage {
+  id           String   @id @default("about")
+  eyebrow      String
+  heading      String
+  lead         String
+  stats        Json
+  missionTitle String
+  missionText1 String
+  missionText2 String
+  values       Json
+  ctaTitle     String
+  ctaText      String
+  updatedAt    DateTime @updatedAt
+}
+
 // Homepage "Цены на клининг" price table (components/landing/Pricing.tsx).
 // tab is one of lib/content.ts's static PriceTabId values ("flats" |
 // "houses" | "rooms" | "special" | "windows") — the tab categories

@@ -14,6 +14,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: `${base}/`, changeFrequency: "weekly", priority: 1 },
     { url: `${base}/moyka-vitrin`, changeFrequency: "monthly", priority: 0.8 },
+    { url: `${base}/uborka-kvartir`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/uborka-domov`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/uborka-kommercheskih-pomeshhenij`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/speczuborka`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/mojka-okon`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/o-kompanii`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/pochemu-vybirayut-nas`, changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/nashi-garantii`, changeFrequency: "monthly", priority: 0.6 },

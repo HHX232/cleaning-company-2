@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { putImage } from "../lib/imageStorage";
 import { servicePages as pages, serviceBlocks, galleryItems } from "./seedData";
+import { ABOUT_DEFAULTS } from "../lib/aboutData";
 
 const prisma = new PrismaClient();
 
@@ -181,6 +182,13 @@ async function main() {
     }
     console.log(`Seeded ${galleryItems.length} gallery items.`);
   }
+
+  await prisma.aboutPage.upsert({
+    where: { id: "about" },
+    update: {},
+    create: { id: "about", ...ABOUT_DEFAULTS },
+  });
+  console.log("Seeded About page (create-if-missing).");
 
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
   if (!existingAdmin) {
