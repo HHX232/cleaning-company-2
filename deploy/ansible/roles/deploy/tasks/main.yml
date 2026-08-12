@@ -82,6 +82,7 @@
   register: build_result
   changed_when: build_result.stdout is search("Compiled successfully")
   when: git_result.changed or prisma_migrate.changed
+  notify: Copy static assets to standalone
 
 - name: Copy public folder to standalone
   ansible.builtin.copy:
@@ -140,7 +141,7 @@
     dest: /etc/nginx/sites-available/{{ domain_name }}
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
   notify: Reload nginx
 
 - name: Enable site
