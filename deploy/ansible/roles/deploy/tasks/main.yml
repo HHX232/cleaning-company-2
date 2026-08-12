@@ -73,22 +73,34 @@
   register: prisma_seed
   changed_when: prisma_seed.stdout is search("seed")
 
+- name: Remove old build cache
+  ansible.builtin.file:
+    path: "{{ app_dir }}/.next"
+    state: absent
+  when: git_result.changed or prisma_migrate.changed
+
+- name: Clean npm cache
+  ansible.builtin.file:
+    path: "{{ app_dir }}/node_modules/.cache"
+    state: absent
+  when: git_result.changed or prisma_migrate.changed
+
 - name: Build Next.js application (standalone)
   ansible.builtin.command:
     cmd: npm run build
     chdir: "{{ app_dir }}"
   environment:
-    NODE_OPTIONS: "--max-old-space-size=512"
+    NODE_OPTIONS: "--max-old-space-size=768"
   register: build_result
   changed_when: build_result.stdout is search("Compiled successfully")
-  when: git_result.changed or prisma_migrate.changed or not (prisma_migrate is skipped)
+  when: git_result.changed or prisma_migrate.changed
 
-- name: Copy static assets to standalone output
-  ansible.builtin.copy:
-    src: "{{ app_dir }}/.next/static/"
-    dest: "{{ app_dir }}/.next/standalone/.next/static/"
-    remote_src: true
-    mode: preserve
+- name: Trigger static assets copy
+  ansible.builtin.debug:
+    msg: "Static assets will be copied"
+  when: build_result.changed
+  changed_when: build_result.changed
+  notify: Copy static assets to standalone
 
 - name: Copy public folder to standalone
   ansible.builtin.copy:
@@ -119,16 +131,17 @@
     recurse: true
     state: directory
 
-- name: Restart or start application via PM2
+- name: Restart or start application via PM2 (force fresh start)
   ansible.builtin.shell:
     cmd: |
       set -o pipefail
       cd {{ app_dir }}
-      pm2 restart cleaning || pm2 start .next/standalone/server.js --name cleaning
+      pm2 delete cleaning || true
+      pm2 start .next/standalone/server.js --name cleaning --node-args="--max-old-space-size=768"
       pm2 save
     executable: /bin/bash
   register: pm2_result
-  changed_when: pm2_result.stdout is search("restart") or pm2_result.stdout is search("start")
+  changed_when: pm2_result.stdout is search("start")
 
 - name: Enable PM2 startup script (idempotent)
   ansible.builtin.shell:
@@ -161,3 +174,8 @@
     path: /etc/nginx/sites-enabled/default
     state: absent
   notify: Reload nginx
+
+- name: Reload nginx
+  ansible.builtin.service:
+    name: nginx
+    state: reloaded
