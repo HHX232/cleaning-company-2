@@ -73,18 +73,6 @@
   register: prisma_seed
   changed_when: prisma_seed.stdout is search("seed")
 
-- name: Remove old build cache
-  ansible.builtin.file:
-    path: "{{ app_dir }}/.next"
-    state: absent
-  when: git_result.changed or prisma_migrate.changed
-
-- name: Clean npm cache
-  ansible.builtin.file:
-    path: "{{ app_dir }}/node_modules/.cache"
-    state: absent
-  when: git_result.changed or prisma_migrate.changed
-
 - name: Build Next.js application (standalone)
   ansible.builtin.command:
     cmd: npm run build
@@ -94,13 +82,6 @@
   register: build_result
   changed_when: build_result.stdout is search("Compiled successfully")
   when: git_result.changed or prisma_migrate.changed
-
-- name: Trigger static assets copy
-  ansible.builtin.debug:
-    msg: "Static assets will be copied"
-  when: build_result.changed
-  changed_when: build_result.changed
-  notify: Copy static assets to standalone
 
 - name: Copy public folder to standalone
   ansible.builtin.copy:

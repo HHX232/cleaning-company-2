@@ -3,10 +3,3 @@
   ansible.builtin.systemd:
     name: nginx
     state: reloaded
-
-- name: Copy static assets to standalone
-  ansible.builtin.copy:
-    src: "{{ app_dir }}/.next/static/"
-    dest: "{{ app_dir }}/.next/standalone/.next/static/"
-    remote_src: true
-    mode: preserve
