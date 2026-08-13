@@ -1,0 +1,29 @@
+---
+- name: Deploy nginx config (alias всегда указывает на {{ app_dir }}/current — редеплой не требует правки nginx)
+  ansible.builtin.template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ domain_name }}
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Enable site
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/{{ domain_name }}
+    dest: /etc/nginx/sites-enabled/{{ domain_name }}
+    state: link
+  notify: Reload nginx
+
+- name: Remove default site
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Reload nginx
+
+- name: Validate nginx config before reloading (fail deploy instead of leaving stale config live)
+  ansible.builtin.command: nginx -t
+  changed_when: false
+
+- name: Flush handlers now (reload happens before smoke-test, not at end of play)
+  ansible.builtin.meta: flush_handlers

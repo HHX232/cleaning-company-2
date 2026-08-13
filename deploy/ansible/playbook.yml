@@ -1,6 +1,7 @@
 - name: Deploy Next.js app
   hosts: cleaning-server
   become: true
+  gather_facts: true
   roles:
     - deploy
   vars_files:
@@ -11,5 +12,7 @@
     branch: main
     nodejs_version: "20"
     app_port: 3000
+    pm2_instances: 1 # >1 требует cluster + PORT-агностичный код; для SQLite держим 1
+    keep_releases: 5 # сколько последних релизов хранить для быстрого rollback
     site_url: "https://специализированный-клининг.бел"
     domain_name: "xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais"

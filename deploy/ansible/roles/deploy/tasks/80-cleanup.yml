@@ -1,0 +1,22 @@
+---
+- name: List all release directories
+  ansible.builtin.find:
+    paths: "{{ app_dir }}/releases"
+    file_type: directory
+  register: all_releases
+
+- name: Sort releases, determine ones to prune (keep last {{ keep_releases }})
+  ansible.builtin.set_fact:
+    releases_to_prune: >-
+      {{ (all_releases.files | map(attribute='path') | sort | list)
+         [:-1 * (keep_releases | int)] if (all_releases.files | length) > (keep_releases | int) else [] }}
+
+- name: Remove old releases beyond retention limit
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ releases_to_prune }}"
+  # NODE_OPTIONS/диск на маленьком VPS — старый плейбук вообще не чистил
+  # ни .next кэш, ни старые версии, что на практике рано или поздно
+  # приводит к ENOSPC прямо посреди `npm run build` и частично собранной
+  # (битой) статике — ещё один правдоподобный источник точечных 404.

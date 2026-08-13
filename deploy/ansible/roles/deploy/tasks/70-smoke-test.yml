@@ -1,0 +1,50 @@
+---
+- name: Wait for app to listen on app_port
+  ansible.builtin.wait_for:
+    port: "{{ app_port }}"
+    host: 127.0.0.1
+    timeout: 20
+
+- name: Smoke test — homepage returns 200 directly from Node (bypass nginx)
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ app_port }}/"
+    status_code: 200
+    return_content: true
+  register: homepage_check
+  retries: 5
+  delay: 2
+  until: homepage_check.status == 200
+
+- name: Verify at least one static chunk exists in the new release
+  ansible.builtin.find:
+    paths: "{{ app_dir }}/current/.next/standalone/.next/static/chunks"
+    patterns: "*.js"
+  register: static_chunks_check
+
+- name: Assert static assets were actually copied
+  ansible.builtin.assert:
+    that: static_chunks_check.matched > 0
+    fail_msg: >
+      В {{ app_dir }}/current/.next/standalone/.next/static/chunks нет ни
+      одного .js файла — шаг копирования статики не сработал, это и есть
+      причина 404 на /_next/static/*.
+
+- name: Smoke test — a static chunk referenced in HTML resolves through nginx
+  ansible.builtin.uri:
+    url: "https://{{ domain_name }}/_next/static/chunks/{{ static_chunks_check.files[0].path | basename }}"
+    status_code: 200
+  delegate_to: localhost
+  become: false
+  ignore_errors: true
+  register: nginx_static_check
+  # ignore_errors: true — если раннер не имеет прямого доступа к домену
+  # (например, GitHub Actions self-hosted runner без внешнего DNS),
+  # не роняем весь деплой из-за сетевых ограничений CI-окружения.
+
+- name: Warn if external static check failed
+  ansible.builtin.debug:
+    msg: >
+      ВНИМАНИЕ: внешняя проверка https://{{ domain_name }}/_next/static/...
+      не прошла ({{ nginx_static_check.status | default('нет ответа') }}).
+      Проверь вручную curl -I с самого сервера и снаружи.
+  when: nginx_static_check.status is not defined or nginx_static_check.status != 200
