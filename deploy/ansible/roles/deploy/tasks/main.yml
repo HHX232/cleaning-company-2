@@ -84,6 +84,15 @@
   when: git_result.changed or prisma_migrate.changed
   notify: Copy static assets to standalone
 
+- name: Debug build error
+  ansible.builtin.debug:
+    msg: |
+      Build failed with:
+      stdout: {{ build_result.stdout }}
+      stderr: {{ build_result.stderr }}
+  when: build_result.rc != 0
+  failed_when: true
+
 - name: Copy public folder to standalone
   ansible.builtin.copy:
     src: "{{ app_dir }}/public/"
