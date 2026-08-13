@@ -47,8 +47,6 @@
   ansible.builtin.command:
     cmd: npm ci
     chdir: "{{ app_dir }}"
-  args:
-    creates: "{{ app_dir }}/node_modules/.package-lock.json"
   register: npm_ci
   changed_when: npm_ci.stdout is search("added")
 
