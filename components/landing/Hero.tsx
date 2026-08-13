@@ -1,4 +1,5 @@
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
+import CountUp from "@/components/ui/CountUp";
 import { heroServices, heroStats } from "@/lib/content";
 import OrderButton from "./OrderButton";
 
@@ -51,7 +52,7 @@ export default function Hero({ imageSrc }: { imageSrc?: string }) {
             key={st.label}
             className={`flex-1 px-2 py-3.5 text-center sm:px-5 sm:py-5.5 ${i > 0 ? "border-l border-border" : ""}`}
           >
-            <div className="text-lg font-extrabold text-primary sm:text-[26px]">{st.value}</div>
+            <CountUp value={st.value} className="text-lg font-extrabold text-primary sm:text-[26px]" />
             <div className="mt-1 text-[11px] text-muted sm:text-xs">{st.label}</div>
           </div>
         ))}

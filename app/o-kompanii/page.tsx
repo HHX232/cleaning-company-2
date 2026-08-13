@@ -3,6 +3,7 @@ import Header from "@/components/landing/Header";
 import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
 import OrderButton from "@/components/landing/OrderButton";
+import CountUp from "@/components/ui/CountUp";
 import { company } from "@/lib/content";
 import { getAboutContent } from "@/lib/aboutData";
 
@@ -40,7 +41,7 @@ export default async function AboutCompanyPage() {
           <div className="mx-auto grid max-w-260 grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
             {about.stats.map((s) => (
               <div key={s.label} className="rounded-2xl border border-border bg-surface p-5 text-center sm:p-6">
-                <div className="text-2xl font-extrabold text-primary sm:text-[32px]">{s.value}</div>
+                <CountUp value={s.value} className="text-2xl font-extrabold text-primary sm:text-[32px]" />
                 <div className="mt-1.5 text-xs leading-snug text-muted sm:text-[13px]">{s.label}</div>
               </div>
             ))}

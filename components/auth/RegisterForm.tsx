@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { toast } from "sonner";
 import { resendRegistrationOtp, startRegistration, verifyRegistration } from "@/app/register/actions";
+import OtpInput from "@/components/auth/OtpInput";
 
 const inputClass = "mt-1 w-full rounded-lg border border-border bg-bg px-3 py-2 text-sm text-ink";
 
@@ -14,6 +15,7 @@ export default function RegisterForm() {
   const { update } = useSession();
   const [step, setStep] = useState<"form" | "code">("form");
   const [submitting, setSubmitting] = useState(false);
+  const [code, setCode] = useState("");
   // Held between steps so we can verify and then sign in.
   const [creds, setCreds] = useState<{ email: string; password: string }>({ email: "", password: "" });
 
@@ -46,15 +48,16 @@ export default function RegisterForm() {
     showDevCode(result.devCode);
   }
 
-  async function onSubmitCode(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  async function verifyCode(codeValue: string) {
     if (submitting) return;
-    const form = new FormData(e.currentTarget);
-    const code = String(form.get("code") ?? "");
+    if (codeValue.length < 6) {
+      toast.error("Введите 6-значный код из письма");
+      return;
+    }
 
     setSubmitting(true);
     const toastId = toast.loading("Проверяем код…");
-    const result = await verifyRegistration(creds.email, code);
+    const result = await verifyRegistration(creds.email, codeValue);
     if (!result.ok) {
       toast.error(result.error, { id: toastId });
       setSubmitting(false);
@@ -77,6 +80,7 @@ export default function RegisterForm() {
 
   async function onResend() {
     if (submitting) return;
+    setCode("");
     setSubmitting(true);
     const toastId = toast.loading("Отправляем новый код…");
     const result = await resendRegistrationOtp(creds.email);
@@ -91,31 +95,27 @@ export default function RegisterForm() {
 
   if (step === "code") {
     return (
-      <form onSubmit={onSubmitCode} className="w-full max-w-sm rounded-2xl border border-border bg-surface p-8">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          verifyCode(code);
+        }}
+        className="w-full max-w-sm rounded-2xl border border-border bg-surface p-8"
+      >
         <h1 className="mb-2 text-xl font-extrabold text-ink">Подтверждение почты</h1>
         <p className="mb-6 text-sm text-muted">
           Мы отправили 6-значный код на <span className="font-semibold text-ink">{creds.email}</span>. Введите его,
           чтобы завершить регистрацию.
         </p>
 
-        <label className="mb-6 block text-sm font-semibold text-ink">
-          Код из письма
-          <input
-            type="text"
-            name="code"
-            inputMode="numeric"
-            autoComplete="one-time-code"
-            pattern="[0-9]*"
-            maxLength={6}
-            required
-            autoFocus
-            className={`${inputClass} text-center text-lg tracking-[6px]`}
-          />
-        </label>
+        <div className="mb-6">
+          <span className="mb-2 block text-sm font-semibold text-ink">Код из письма</span>
+          <OtpInput value={code} onChange={setCode} onComplete={verifyCode} disabled={submitting} />
+        </div>
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || code.length < 6}
           className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-on-primary transition-opacity disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? "Проверяем…" : "Подтвердить"}
@@ -132,7 +132,10 @@ export default function RegisterForm() {
           </button>
           <button
             type="button"
-            onClick={() => setStep("form")}
+            onClick={() => {
+              setStep("form");
+              setCode("");
+            }}
             className="text-muted hover:text-ink"
           >
             Изменить данные
