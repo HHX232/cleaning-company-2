@@ -8,6 +8,7 @@ import { disconnectTelegram } from "@/lib/telegramLink";
 import Header from "@/components/landing/Header";
 import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
+import AdminForm from "@/components/admin/AdminForm";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import OrdersList from "@/components/profile/OrdersList";
 import ChatButton from "@/components/profile/ChatButton";
@@ -94,11 +95,11 @@ export default async function ProfilePage() {
             {user.telegramChatId ? (
               <>
                 <span className="text-[13px] font-bold text-primary">✅ Подключено</span>
-                <form action={disconnectTelegram}>
+                <AdminForm action={disconnectTelegram} loadingText="Отключаем…" successText="Telegram отключён">
                   <button type="submit" className="text-[13px] font-bold text-muted hover:text-ink">
                     Отключить
                   </button>
-                </form>
+                </AdminForm>
               </>
             ) : (
               <TelegramLinkButton />

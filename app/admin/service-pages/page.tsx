@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import ImageUploadRow from "@/components/admin/ImageUploadRow";
 import { createServicePage, deleteServicePage, updateServicePage } from "./actions";
 
@@ -29,7 +30,7 @@ export default async function AdminServicePagesPage() {
                 </a>
               </div>
 
-              <form action={updateServicePage.bind(null, p.id)} className="mb-4 flex flex-col gap-3">
+              <AdminForm action={updateServicePage.bind(null, p.id)} className="mb-4 flex flex-col gap-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <label className={labelClass}>
                     Заголовок (H1)
@@ -90,7 +91,7 @@ export default async function AdminServicePagesPage() {
                     Удалить страницу
                   </button>
                 </div>
-              </form>
+              </AdminForm>
 
               <div className="flex flex-col gap-3 border-t border-border pt-3">
                 <ImageUploadRow
@@ -119,7 +120,7 @@ export default async function AdminServicePagesPage() {
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новая страница услуги</summary>
-        <form action={createServicePage} className="mt-3 flex flex-col gap-3">
+        <AdminForm action={createServicePage} className="mt-3 flex flex-col gap-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className={labelClass}>
               Заголовок (H1)
@@ -165,7 +166,7 @@ export default async function AdminServicePagesPage() {
               Создать страницу
             </button>
           </div>
-        </form>
+        </AdminForm>
         <p className="mt-2 text-[11px] text-muted">Фото можно загрузить после создания страницы.</p>
       </details>
     </div>

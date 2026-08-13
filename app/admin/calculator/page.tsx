@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import type { CalculatorField } from "@/lib/dbEnums";
 import { createOption, deleteOption, updateOption } from "./actions";
 
@@ -58,7 +59,7 @@ export default async function AdminCalculatorPage() {
               <div className="mb-3 flex flex-col gap-2">
                 {options.length === 0 && <p className="text-xs text-muted">Нет опций.</p>}
                 {options.map((option) => (
-                  <form
+                  <AdminForm
                     key={option.id}
                     action={updateOption.bind(null, option.id)}
                     className={`grid grid-cols-1 items-center gap-2 rounded-xl border border-border bg-surface p-3 ${grid}`}
@@ -93,13 +94,13 @@ export default async function AdminCalculatorPage() {
                         Удалить
                       </button>
                     </div>
-                  </form>
+                  </AdminForm>
                 ))}
               </div>
 
               <details className="rounded-lg border border-border bg-surface p-3">
                 <summary className="cursor-pointer text-xs font-bold text-ink">+ Новая опция</summary>
-                <form action={createOption} className={`mt-3 grid grid-cols-1 gap-2 ${grid}`}>
+                <AdminForm action={createOption} className={`mt-3 grid grid-cols-1 gap-2 ${grid}`}>
                   <input type="hidden" name="field" value={field} />
                   <input type="text" name="key" placeholder="ключ (en)" required title="Ключ (en)" className={inputClass} />
                   <input type="text" name="label" placeholder="Название" required title="Название" className={inputClass} />
@@ -112,7 +113,7 @@ export default async function AdminCalculatorPage() {
                   <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary">
                     Создать
                   </button>
-                </form>
+                </AdminForm>
               </details>
             </div>
           );

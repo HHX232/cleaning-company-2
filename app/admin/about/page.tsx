@@ -1,4 +1,5 @@
 import { getAboutContent } from "@/lib/aboutData";
+import AdminForm from "@/components/admin/AdminForm";
 import { updateAbout } from "./actions";
 
 const inputClass = "rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm text-ink";
@@ -21,7 +22,7 @@ export default async function AdminAboutPage() {
         . В блоках-списках каждая строка — отдельный элемент в формате «слева | справа».
       </p>
 
-      <form action={updateAbout} className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4">
+      <AdminForm action={updateAbout} className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4">
         <label className={labelClass}>
           Надзаголовок (eyebrow)
           <input type="text" name="eyebrow" defaultValue={about.eyebrow} className={inputClass} />
@@ -72,7 +73,7 @@ export default async function AdminAboutPage() {
             Сохранить
           </button>
         </div>
-      </form>
+      </AdminForm>
     </div>
   );
 }

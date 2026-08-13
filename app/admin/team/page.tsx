@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import ImageUploadRow from "@/components/admin/ImageUploadRow";
 import { createTeamMember, deleteTeamMember, updateTeamMember } from "./actions";
 
@@ -19,7 +20,7 @@ export default async function AdminTeamPage() {
         {members.length === 0 && <p className="text-sm text-muted">Пока нет специалистов.</p>}
         {members.map((m) => (
           <div key={m.id} className="rounded-xl border border-border bg-surface p-4">
-            <form action={updateTeamMember.bind(null, m.id)} className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_90px_auto]">
+            <AdminForm action={updateTeamMember.bind(null, m.id)} className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_90px_auto]">
               <label className={labelClass}>
                 Имя
                 <input type="text" name="name" defaultValue={m.name} required className={inputClass} />
@@ -44,7 +45,7 @@ export default async function AdminTeamPage() {
                   Удалить
                 </button>
               </div>
-            </form>
+            </AdminForm>
             <ImageUploadRow
               imgKey={`team-member-${m.id}`}
               label="Фото специалиста"
@@ -60,7 +61,7 @@ export default async function AdminTeamPage() {
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый специалист</summary>
-        <form action={createTeamMember} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_90px_auto]">
+        <AdminForm action={createTeamMember} className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-[1fr_1fr_90px_auto]">
           <label className={labelClass}>
             Имя
             <input type="text" name="name" placeholder="Кирилл" required className={inputClass} />
@@ -78,7 +79,7 @@ export default async function AdminTeamPage() {
               Создать
             </button>
           </div>
-        </form>
+        </AdminForm>
         <p className="mt-2 text-[11px] text-muted">Фото можно загрузить после создания специалиста.</p>
       </details>
     </div>

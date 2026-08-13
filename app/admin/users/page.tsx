@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import AdminForm from "@/components/admin/AdminForm";
 import { prisma } from "@/lib/prisma";
 import { deriveStatus, formatRuDate, kindPresentationFor, statusPresentation } from "@/lib/orderStatus";
 import { createUser, deleteUser, updateUser } from "./actions";
@@ -45,7 +46,7 @@ export default async function AdminUsersPage() {
                 <div className="text-xs text-muted">Зарегистрирован {formatRuDate(user.createdAt)}</div>
               </div>
 
-              <form action={updateUser.bind(null, user.id)} className="mb-3 flex flex-col gap-3">
+              <AdminForm action={updateUser.bind(null, user.id)} className="mb-3 flex flex-col gap-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   <label className={labelClass}>
                     Email
@@ -86,7 +87,7 @@ export default async function AdminUsersPage() {
                     </button>
                   )}
                 </div>
-              </form>
+              </AdminForm>
 
               {user.orders.length === 0 ? (
                 <p className="border-t border-border pt-2 text-xs text-muted">Заказов нет.</p>
@@ -120,7 +121,7 @@ export default async function AdminUsersPage() {
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый пользователь</summary>
-        <form action={createUser} className="mt-3 flex flex-col gap-3">
+        <AdminForm action={createUser} className="mt-3 flex flex-col gap-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <label className={labelClass}>
               Email
@@ -152,7 +153,7 @@ export default async function AdminUsersPage() {
               Создать пользователя
             </button>
           </div>
-        </form>
+        </AdminForm>
       </details>
     </div>
   );

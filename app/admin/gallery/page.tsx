@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import ImageUploadRow from "@/components/admin/ImageUploadRow";
 import { createGalleryItem, deleteGalleryItem, updateGalleryItem } from "./actions";
 
@@ -23,7 +24,7 @@ export default async function AdminGalleryPage() {
           const meta = ((item.meta as string[] | null) ?? []).join("\n");
           return (
             <div key={item.id} className="rounded-xl border border-border bg-surface p-4">
-              <form action={updateGalleryItem.bind(null, item.id)} className="mb-3 flex flex-col gap-3">
+              <AdminForm action={updateGalleryItem.bind(null, item.id)} className="mb-3 flex flex-col gap-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_90px]">
                   <label className={labelClass}>
                     Заголовок
@@ -50,7 +51,7 @@ export default async function AdminGalleryPage() {
                     Удалить блок
                   </button>
                 </div>
-              </form>
+              </AdminForm>
 
               <div className="flex flex-col gap-3 border-t border-border pt-3">
                 <ImageUploadRow
@@ -79,7 +80,7 @@ export default async function AdminGalleryPage() {
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый блок</summary>
-        <form action={createGalleryItem} className="mt-3 flex flex-col gap-3">
+        <AdminForm action={createGalleryItem} className="mt-3 flex flex-col gap-3">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_90px]">
             <label className={labelClass}>
               Заголовок
@@ -99,7 +100,7 @@ export default async function AdminGalleryPage() {
               Создать блок
             </button>
           </div>
-        </form>
+        </AdminForm>
         <p className="mt-2 text-[11px] text-muted">Фото «до/после» можно загрузить после создания блока.</p>
       </details>
     </div>

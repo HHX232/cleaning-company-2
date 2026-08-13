@@ -29,6 +29,16 @@ function displayItems(items: string[]): string[] {
 export default function ServicesDetail({ bigServices, smallServices, imageSrcBySlot = {} }: ServicesDetailProps) {
   const openContactModal = useContactModal();
 
+  // The big-service row is admin-editable in count, so the column layout adapts:
+  // one block goes full width, exactly two keep the designed asymmetric hero
+  // look, three or more fall back to even pairs.
+  const bigGridClass =
+    bigServices.length === 1
+      ? "grid-cols-1"
+      : bigServices.length === 2
+        ? "grid-cols-1 lg:grid-cols-[1.4fr_1fr]"
+        : "grid-cols-1 sm:grid-cols-2";
+
   return (
     <section id="catalog" className="px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
       <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">
@@ -37,7 +47,8 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
         </Link>
       </h2>
 
-      <div className="mx-auto mb-5 grid max-w-[1200px] grid-cols-1 gap-5 lg:grid-cols-[1.4fr_1fr]">
+      {bigServices.length > 0 && (
+      <div className={`mx-auto mb-5 grid max-w-[1200px] gap-5 ${bigGridClass}`}>
         {bigServices.map((svc) => (
           <div key={svc.slotId} className="relative min-h-64 overflow-hidden rounded-[18px] bg-dark sm:min-h-[300px]">
             <ImagePlaceholder
@@ -70,7 +81,9 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
           </div>
         ))}
       </div>
+      )}
 
+      {smallServices.length > 0 && (
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {smallServices.map((svc) => (
           <div key={svc.slotId} className="relative min-h-60 overflow-hidden rounded-[18px] bg-dark sm:min-h-[270px]">
@@ -101,6 +114,7 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
           </div>
         ))}
       </div>
+      )}
     </section>
   );
 }

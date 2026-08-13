@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import { formatRuDateTime } from "@/lib/orderStatus";
 import { markCallbackHandled } from "./actions";
 
@@ -29,14 +30,14 @@ export default async function AdminCallbacksPage() {
               {r.handledAt ? (
                 <span className="shrink-0 text-xs font-bold text-muted">Обработана</span>
               ) : (
-                <form action={markCallbackHandled.bind(null, r.id)}>
+                <AdminForm action={markCallbackHandled.bind(null, r.id)}>
                   <button
                     type="submit"
                     className="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-bold text-ink transition-colors hover:border-primary"
                   >
                     Отметить обработанной
                   </button>
-                </form>
+                </AdminForm>
               )}
             </div>
           ))}

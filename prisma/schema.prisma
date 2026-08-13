@@ -287,3 +287,18 @@ model PriceRow {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Pending email-verification for public registration. Holds the hashed OTP and
+// the would-be user's hashed password until the code is confirmed; on success
+// a real User row is created and this row is deleted. Unverified emails never
+// become User rows.
+model EmailVerification {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  codeHash     String
+  expiresAt    DateTime
+  attempts     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

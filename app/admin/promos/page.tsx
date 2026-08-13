@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import { createPromo, deletePromo, updatePromo } from "./actions";
 
 export default async function AdminPromosPage() {
@@ -23,7 +24,7 @@ export default async function AdminPromosPage() {
       <div className="mb-6 flex flex-col gap-3">
         {promos.length === 0 && <p className="text-sm text-muted">Пока нет акций.</p>}
         {promos.map((promo) => (
-          <form
+          <AdminForm
             key={promo.id}
             action={updatePromo.bind(null, promo.id)}
             className="grid grid-cols-1 gap-2 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[100px_1fr_2fr_70px_auto]"
@@ -67,13 +68,13 @@ export default async function AdminPromosPage() {
                 Удалить
               </button>
             </div>
-          </form>
+          </AdminForm>
         ))}
       </div>
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новая акция</summary>
-        <form action={createPromo} className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[100px_1fr_2fr_70px_auto]">
+        <AdminForm action={createPromo} className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[100px_1fr_2fr_70px_auto]">
           <input
             type="text"
             name="badge"
@@ -105,7 +106,7 @@ export default async function AdminPromosPage() {
           <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary">
             Создать
           </button>
-        </form>
+        </AdminForm>
       </details>
     </div>
   );

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import { createReview, deleteReview, updateReview } from "./actions";
 
 export default async function AdminReviewsPage() {
@@ -23,7 +24,7 @@ export default async function AdminReviewsPage() {
       <div className="mb-6 flex flex-col gap-3">
         {reviews.length === 0 && <p className="text-sm text-muted">Пока нет отзывов.</p>}
         {reviews.map((review) => (
-          <form
+          <AdminForm
             key={review.id}
             action={updateReview.bind(null, review.id)}
             className="grid grid-cols-1 gap-2 rounded-xl border border-border bg-surface p-4 sm:grid-cols-[70px_2fr_1.4fr_70px_auto]"
@@ -68,13 +69,13 @@ export default async function AdminReviewsPage() {
                 Удалить
               </button>
             </div>
-          </form>
+          </AdminForm>
         ))}
       </div>
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый отзыв</summary>
-        <form action={createReview} className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[70px_2fr_1.4fr_70px_auto]">
+        <AdminForm action={createReview} className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-[70px_2fr_1.4fr_70px_auto]">
           <input
             type="number"
             name="stars"
@@ -107,7 +108,7 @@ export default async function AdminReviewsPage() {
           <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary">
             Создать
           </button>
-        </form>
+        </AdminForm>
       </details>
     </div>
   );

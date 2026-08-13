@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Golos_Text } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 import FloatingContact from "@/components/landing/FloatingContact";
 import ContactModalProvider from "@/components/landing/ContactModalProvider";
+import TopProgressBar from "@/components/ui/TopProgressBar";
 import "./globals.css";
 
 const golosText = Golos_Text({
@@ -55,6 +57,9 @@ export default function RootLayout({
     <html lang="ru" className={`${golosText.variable} scroll-smooth antialiased`}>
       <body className="font-sans">
         <SessionProvider>
+          <Suspense fallback={null}>
+            <TopProgressBar />
+          </Suspense>
           <ContactModalProvider>
             {children}
             <FloatingContact />

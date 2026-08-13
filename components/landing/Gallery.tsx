@@ -12,7 +12,7 @@ export default function Gallery({ title, items }: GalleryProps) {
   return (
     <section className="bg-surface px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
       <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">{title}</h2>
-      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 [&>*:last-child:nth-child(odd)]:md:col-span-2">
         {items.map((g) => (
           <div key={g.id} className="overflow-hidden rounded-2xl border border-border bg-bg">
             <div className="px-5 pt-4">

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import { createServiceBlock, deleteServiceBlock, updateServiceBlock } from "./actions";
 
 export default async function AdminServicesPage() {
@@ -17,7 +18,7 @@ export default async function AdminServicesPage() {
         {blocks.map((block) => {
           const items = (block.items as string[] | null) ?? [];
           return (
-          <form
+          <AdminForm
             key={block.id}
             action={updateServiceBlock.bind(null, block.id)}
             className="flex flex-col gap-2 rounded-xl border border-border bg-surface p-4"
@@ -72,14 +73,14 @@ export default async function AdminServicesPage() {
                 Удалить
               </button>
             </div>
-          </form>
+          </AdminForm>
           );
         })}
       </div>
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый блок услуги</summary>
-        <form action={createServiceBlock} className="mt-3 flex flex-col gap-2">
+        <AdminForm action={createServiceBlock} className="mt-3 flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-2">
             <select name="size" defaultValue="SMALL" className="rounded-lg border border-border bg-bg px-2.5 py-1.5 text-xs text-ink">
               <option value="BIG">Крупный блок</option>
@@ -114,7 +115,7 @@ export default async function AdminServicesPage() {
           <button type="submit" className="w-fit rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary">
             Создать
           </button>
-        </form>
+        </AdminForm>
       </details>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { generateTelegramLinkToken } from "@/lib/telegramLink";
 
 export default function TelegramLinkButton() {
@@ -13,13 +14,16 @@ export default function TelegramLinkButton() {
   async function handleClick() {
     setLoading(true);
     setError("");
+    const toastId = toast.loading("Готовим ссылку на бота…");
     const result = await generateTelegramLinkToken();
     setLoading(false);
     if (!result.ok) {
       setError(result.message);
+      toast.error(result.message, { id: toastId });
       return;
     }
     setUrl(result.url);
+    toast.success("Ссылка готова — открываем Telegram", { id: toastId });
     window.open(result.url, "_blank", "noopener,noreferrer");
   }
 

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import { priceTabs } from "@/lib/content";
 import { createPriceRow, deletePriceRow, updatePriceRow } from "./actions";
 
@@ -38,7 +39,7 @@ export default async function AdminPricesPage() {
       <div className="mb-6 flex flex-col gap-3">
         {rows.length === 0 && <p className="text-sm text-muted">Пока нет строк с ценами.</p>}
         {rows.map((row) => (
-          <form
+          <AdminForm
             key={row.id}
             action={updatePriceRow.bind(null, row.id)}
             className={`grid grid-cols-1 gap-2 rounded-xl border border-border bg-surface p-4 ${gridCols}`}
@@ -79,13 +80,13 @@ export default async function AdminPricesPage() {
                 Удалить
               </button>
             </div>
-          </form>
+          </AdminForm>
         ))}
       </div>
 
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новая строка</summary>
-        <form action={createPriceRow} className={`mt-3 grid grid-cols-1 gap-2 ${gridCols}`}>
+        <AdminForm action={createPriceRow} className={`mt-3 grid grid-cols-1 gap-2 ${gridCols}`}>
           <TabSelect name="tab" defaultValue="flats" />
           <input
             type="text"
@@ -111,7 +112,7 @@ export default async function AdminPricesPage() {
           <button type="submit" className="rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary">
             Создать
           </button>
-        </form>
+        </AdminForm>
       </details>
     </div>
   );

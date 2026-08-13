@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AdminForm from "@/components/admin/AdminForm";
 import { deriveStatus, kindPresentationFor, statusPresentation } from "@/lib/orderStatus";
 import { advanceOrderStatus, createOrder, deleteOrder, updateOrderFull } from "./actions";
 import OrderRow from "@/components/admin/OrderRow";
@@ -78,7 +79,7 @@ export default async function AdminOrdersPage() {
 
             <details className="rounded-lg border border-border bg-bg p-3">
               <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый заказ</summary>
-              <form action={createOrder} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <AdminForm action={createOrder} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
                 <input type="hidden" name="userId" value={customer.id} />
                 <input
                   type="text"
@@ -137,7 +138,7 @@ export default async function AdminOrdersPage() {
                 >
                   Создать
                 </button>
-              </form>
+              </AdminForm>
             </details>
           </div>
         ))}

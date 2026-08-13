@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import AdminForm from "@/components/admin/AdminForm";
 import type { Order } from "@prisma/client";
 import { formatRuDate, formatRuDateTime } from "@/lib/orderStatus";
 
@@ -65,7 +66,7 @@ export default function OrderRow({
 
       {open && (
         <div className="flex flex-col gap-3 border-t border-border px-3 py-3 text-xs">
-          <form action={updateOrderFull.bind(null, order.id)} className="flex flex-col gap-3">
+          <AdminForm action={updateOrderFull.bind(null, order.id)} className="flex flex-col gap-3">
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <label className={lbl}>
                 Тип уборки
@@ -141,36 +142,36 @@ export default function OrderRow({
                 Сохранить заказ
               </button>
             </div>
-          </form>
+          </AdminForm>
 
           <div className="flex flex-wrap items-center gap-2 border-t border-border pt-2">
             <span className="text-[11px] font-bold text-muted">Быстро:</span>
             {advance && (
-              <form action={advanceOrderStatus.bind(null, order.id, advance.action)}>
+              <AdminForm action={advanceOrderStatus.bind(null, order.id, advance.action)}>
                 <button type="submit" className="rounded-lg border border-border px-2.5 py-1 font-semibold text-ink hover:bg-surface">
                   {advance.label}
                 </button>
-              </form>
+              </AdminForm>
             )}
             {needsPayment && (
-              <form action={advanceOrderStatus.bind(null, order.id, "pay")}>
+              <AdminForm action={advanceOrderStatus.bind(null, order.id, "pay")}>
                 <button type="submit" className="rounded-lg border border-border px-2.5 py-1 font-semibold text-ink hover:bg-surface">
                   Отметить оплаченным
                 </button>
-              </form>
+              </AdminForm>
             )}
             {canCancel && (
-              <form action={advanceOrderStatus.bind(null, order.id, "cancel")}>
+              <AdminForm action={advanceOrderStatus.bind(null, order.id, "cancel")}>
                 <button type="submit" className="rounded-lg border border-border px-2.5 py-1 font-semibold text-[#b23434] hover:bg-surface">
                   Отменить
                 </button>
-              </form>
+              </AdminForm>
             )}
-            <form action={deleteOrder.bind(null, order.id)}>
+            <AdminForm action={deleteOrder.bind(null, order.id)}>
               <button type="submit" className="rounded-lg border border-border px-2.5 py-1 font-semibold text-muted hover:bg-surface">
                 Удалить
               </button>
-            </form>
+            </AdminForm>
           </div>
         </div>
       )}
