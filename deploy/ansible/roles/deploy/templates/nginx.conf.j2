@@ -36,9 +36,12 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
+        add_header Cache-Control "no-cache, no-store, must-revalidate" always;
     }
 
     location /_next/static/ {
         alias /opt/cleaning/.next/standalone/.next/static/;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
     }
 }

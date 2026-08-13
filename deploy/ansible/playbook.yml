@@ -9,7 +9,7 @@
     app_dir: /opt/cleaning
     repo_url: https://github.com/HHX232/cleaning-company-2.git
     branch: main
-    nodejs_version: "20"
+    nodejs_version: "24"
     app_port: 3000
     site_url: "https://специализированный-клининг.бел"
     domain_name: "xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais"
