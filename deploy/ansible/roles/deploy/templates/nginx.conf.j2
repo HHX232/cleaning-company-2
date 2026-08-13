@@ -32,7 +32,7 @@ server {
     # важно для избежания гонки между уже открытыми у пользователя вкладками
     # и новым деплоем (см. модель releases/current в role deploy).
     location /_next/static/ {
-        alias {{ app_dir }}/current/.next/standalone/.next/static/;
+        alias {{ app_dir }}/current/app/.next/static/;
         add_header Cache-Control "public, max-age=31536000, immutable";
         access_log off;
         # Явный 404 тут почти всегда значит: (а) деплой ещё идёт и current

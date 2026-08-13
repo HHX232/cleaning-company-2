@@ -1,0 +1,47 @@
+---
+- name: Fail early if release_tarball var wasn't passed
+  ansible.builtin.assert:
+    that: release_tarball | length > 0
+    fail_msg: >
+      Не передан --extra-vars "release_tarball=/path/to/release.tar.gz".
+      В GitHub Actions это делает job "deploy" автоматически; для ручного
+      запуска сначала соберите артефакт локально или скачайте его из
+      Actions → Artifacts.
+
+# unarchive с src на КОНТРОЛ-ноде (raннере) и remote_src:false сам
+# передаёт файл по SSH и распаковывает его на сервере за один таск —
+# не нужен отдельный scp/rsync шаг.
+- name: Upload and extract release artifact
+  ansible.builtin.unarchive:
+    src: "{{ release_tarball }}"
+    dest: "{{ release_path }}"
+    remote_src: false
+    owner: dev
+    group: dev
+  # На маленьком VPS это самый "тяжёлый" сетевой шаг деплоя — размер
+  # архива стоит проверять (du -sh release.tar.gz в логах job "build").
+  # Ожидаемый размер для этого проекта — заметно меньше, чем полный
+  # node_modules, т.к. это только standalone-трейс + один прод-чанк для миграций.
+
+- name: Show BUILD_INFO for this release
+  ansible.builtin.command: cat {{ release_path }}/BUILD_INFO.json
+  changed_when: false
+  register: build_info
+
+- name: Display BUILD_INFO
+  ansible.builtin.debug:
+    var: build_info.stdout
+
+- name: Run pending Prisma migrations against the shared SQLite db
+  ansible.builtin.command: >
+    node node_modules/.bin/prisma migrate deploy
+    --schema=prisma/schema.prisma
+  args:
+    chdir: "{{ release_path }}/migrate"
+  environment:
+    DATABASE_URL: "{{ vault_database_url }}"
+  become_user: dev
+  register: migrate_result
+  changed_when: "'No pending migrations' not in migrate_result.stdout"
+  # Только этот таск трогает node_modules/prisma (CLI) — они приехали в
+  # составе артефакта (папка migrate/), устанавливать их на сервере не нужно.

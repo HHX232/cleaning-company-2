@@ -1,0 +1,20 @@
+---
+# При 15G диска и уже занятых ~10G (актуально на момент настройки — проверяй
+# `df -h` регулярно) свободного места мало, а неудачная распаковка
+# наполовину — хуже, чем явный отказ деплоя. Лучше упасть здесь, чем
+# получить ENOSPC посреди unarchive и полурабочий релиз.
+
+- name: Check free disk space on {{ app_dir }}
+  ansible.builtin.shell:
+    cmd: "set -o pipefail; df --output=avail -m {{ app_dir }} | tail -1"
+    executable: /bin/bash
+  register: disk_free_mb
+  changed_when: false
+
+- name: Assert enough free space before extracting new release
+  ansible.builtin.assert:
+    that: (disk_free_mb.stdout | trim | int) >= (min_free_mb | int)
+    fail_msg: >
+      Свободно всего {{ disk_free_mb.stdout | trim }}MB на {{ app_dir }},
+      требуется минимум {{ min_free_mb }}MB. Освободи место (уменьши
+      keep_releases, почисти /var/log, docker prune и т.п.) перед деплоем.

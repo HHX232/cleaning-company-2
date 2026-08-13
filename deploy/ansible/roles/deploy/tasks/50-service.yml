@@ -6,23 +6,21 @@
   changed_when: false
   failed_when: false
 
-- name: Start app via PM2 (first deploy — process doesn't exist yet)
-  ansible.builtin.command: pm2 start {{ release_path }}/.next/standalone/ecosystem.config.js
+- name: Start app via PM2 (first deploy)
+  ansible.builtin.command: pm2 start {{ app_dir }}/current/ecosystem.config.js
   become_user: dev
   when: pm2_id_check.rc != 0
   changed_when: true
 
-- name: Reload app via PM2 (subsequent deploys — graceful, avoids the
-    "delete+start" gap during which nginx could 502 or serve a half-started process)
-  ansible.builtin.command: pm2 reload cleaning --update-env
+# ВАЖНО: `pm2 reload cleaning` (по имени) обновит только env, но НЕ
+# script/cwd — процесс продолжит работать со старым release_path.
+# Чтобы PM2 подхватил новый релиз, reload нужно вызывать с путём к
+# СВЕЖЕМУ ecosystem-файлу (через актуальный symlink current).
+- name: Reload app via PM2 (graceful, picks up new release path)
+  ansible.builtin.command: pm2 reload {{ app_dir }}/current/ecosystem.config.js --update-env
   become_user: dev
   when: pm2_id_check.rc == 0
   changed_when: true
-  # ВАЖНО: старый плейбук делал `pm2 delete cleaning || true` + `pm2 start`
-  # НА КАЖДОМ деплое. Это давало короткое окно (сотни мс — секунды на
-  # маленьком VPS), когда порт 3000 никем не слушался. Если в этот момент
-  # nginx или curl стучались в /_next/static/..., это тоже давало бы 404/502,
-  # что усугубляло диагностику "какая именно причина 404".
 
 - name: Save PM2 process list
   ansible.builtin.command: pm2 save

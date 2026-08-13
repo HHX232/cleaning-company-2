@@ -1,10 +1,8 @@
 ---
-# Декомпозированный пайплайн деплоя. Каждый шаг — отдельный файл,
-# что упрощает чтение диффов, точечный debug (--start-at-task) и переиспользование.
 - ansible.builtin.import_tasks: 00-packages.yml
 - ansible.builtin.import_tasks: 10-prepare-dirs.yml
-- ansible.builtin.import_tasks: 20-source.yml
-- ansible.builtin.import_tasks: 30-build.yml
+- ansible.builtin.import_tasks: 20-check-disk.yml
+- ansible.builtin.import_tasks: 30-deploy-artifact.yml
 - ansible.builtin.import_tasks: 40-release.yml
 - ansible.builtin.import_tasks: 50-service.yml
 - ansible.builtin.import_tasks: 60-webserver.yml
