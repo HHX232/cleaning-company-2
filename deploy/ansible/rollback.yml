@@ -1,4 +1,7 @@
 ---
+# Быстрый откат: ansible-playbook rollback.yml -i inventory.yml
+# Переключает symlink current на предыдущий релиз и делает pm2 reload.
+# Ничего не собирает и не тянет из git — поэтому выполняется за секунды.
 - name: Rollback to previous release
   hosts: cleaning-server
   become: true
@@ -35,9 +38,8 @@
         state: link
         force: true
 
-    - name: Reload app via PM2 using the (now previous) release's ecosystem file
-      ansible.builtin.command: pm2 reload {{ app_dir }}/current/ecosystem.config.js --update-env
-      become_user: dev
+    - name: Reload app via PM2
+      ansible.builtin.command: pm2 reload cleaning --update-env
       changed_when: true
 
     - name: Smoke test after rollback

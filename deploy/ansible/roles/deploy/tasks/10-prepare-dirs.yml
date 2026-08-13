@@ -1,4 +1,16 @@
 ---
+# Структура на сервере:
+#   {{ app_dir }}/shared/.env           <- единственный источник правды для секретов
+#   {{ app_dir }}/shared/prisma/dev.db  <- SQLite-база, ПЕРСИСТЕНТНА между релизами
+#   {{ app_dir }}/releases/<timestamp>/ <- каждый деплой в свою папку (git clone + build)
+#   {{ app_dir }}/current               <- symlink на актуальный релиз (меняется атомарно)
+#
+# Именно отсутствие такой модели — корень бага с 404 на /_next/static:
+# при redeploy старая версия статики в app_dir перезаписывалась новой ПОКА
+# nginx/PM2 уже отдавали HTML со старыми хэшами чанков. Любой запрос,
+# сделанный в этом окне (или браузером с уже загруженной старой HTML),
+# получал 404, т.к. файл со старым хэшем был удалён/переписан.
+
 - name: Set release timestamp
   ansible.builtin.set_fact:
     release_timestamp: "{{ ansible_date_time.iso8601_basic_short }}"
@@ -19,7 +31,12 @@
     - "{{ app_dir }}/shared"
     - "{{ app_dir }}/shared/prisma"
     - "{{ app_dir }}/releases"
-  # Секреты (DATABASE_URL, NEXTAUTH_SECRET, ключи S3) больше не хранятся в
-  # .env-файле на сервере — они приходят из vars/vault.yml прямо в
-  # ecosystem.config.js на этапе релиза. Это убирает необходимость
-  # синхронизировать/симлинкать .env между release-директориями.
+
+- name: Create .env from template in shared (only if missing — секреты не пересоздаём каждый деплой)
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ app_dir }}/shared/.env"
+    owner: dev
+    group: dev
+    mode: "0600"
+    force: false

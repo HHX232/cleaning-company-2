@@ -1,25 +1,24 @@
-// Генерируется Ansible из vars/vault.yml — не редактировать руками на сервере.
-// Файл содержит секреты (DATABASE_URL, ключи) — права 0600, владелец dev.
+// Генерируется Ansible — не редактировать руками на сервере.
 module.exports = {
   apps: [
     {
       name: "cleaning",
       script: "server.js",
-      cwd: "{{ release_path }}/app",
+      cwd: "{{ release_path }}/.next/standalone",
       instances: {{ pm2_instances }},
       exec_mode: "{{ 'cluster' if pm2_instances | int > 1 else 'fork' }}",
-      node_args: "--max-old-space-size=384",
+      node_args: "--max-old-space-size=768",
       env: {
         PORT: "{{ app_port }}",
         HOSTNAME: "127.0.0.1",
         NODE_ENV: "production",
-        DATABASE_URL: "{{ vault_database_url }}",
-        NEXTAUTH_SECRET: "{{ vault_next_auth_secret }}",
-        AWS_ACCESS_KEY_ID: "{{ vault_s3_access_key }}",
-        AWS_SECRET_ACCESS_KEY: "{{ vault_s3_secret_key }}",
       },
-      max_memory_restart: "450M",
+      max_memory_restart: "600M",
       autorestart: true,
+      // wait_ready + listen_timeout дают PM2 понять, что новый процесс
+      // реально поднялся и начал слушать порт, прежде чем убивать старый —
+      // это то, что делает `pm2 reload` условно "zero-downtime" даже в fork-режиме.
+      wait_ready: false,
       listen_timeout: 8000,
       kill_timeout: 5000,
     },

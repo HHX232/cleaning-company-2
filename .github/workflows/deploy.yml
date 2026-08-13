@@ -5,174 +5,63 @@ on:
     branches: [main]
   workflow_dispatch: {}
 
+# Гарантирует, что второй push не запустит параллельный деплой поверх текущего.
 concurrency:
   group: deploy-production
   cancel-in-progress: false
 
 env:
   DEPLOY_HOST: 62.182.102.68
-  NODE_VERSION: "20"
 
 jobs:
-  # ──────────────────────────────────────────────────────────────
-  # 1. Синтаксис Ansible — без SSH, без сборки, самый дешёвый и быстрый гейт.
-  # ──────────────────────────────────────────────────────────────
+  # 1. Быстрая проверка синтаксиса — падает за ~20 секунд без SSH к серверу,
+  #    если кто-то закоммитил битый YAML в playbook.
   lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Ansible
-        run: pipx install --include-deps ansible
+      - uses: ./.github/actions/setup-ansible
+        with:
+          vault-password: ${{ secrets.VAULT_PASS }}
 
-      - name: Create vault password file
-        run: |
-          echo "${{ secrets.VAULT_PASS }}" > .vault_pass
-          chmod 600 .vault_pass
-
-      - name: Syntax check
+      - name: Ansible syntax check
         run: |
           ansible-playbook -i deploy/ansible/inventory.yml \
             deploy/ansible/playbook.yml \
             --vault-password-file .vault_pass \
             --syntax-check
-  # ──────────────────────────────────────────────────────────────
-  # 2. СБОРКА. Никогда не трогает сервер и не требует SSH/vault-секретов —
-  #    отдельный принцип наименьших привилегий: раннер, который собирает
-  #    код, физически не может задеть прод.
-  #    Здесь — вся тяжёлая работа (npm ci, prisma generate, next build),
-  #    которую раньше пытались тянуть на VPS с ~350 МБ свободной RAM.
-  # ──────────────────────────────────────────────────────────────
-  build:
+
+  # 2. Сам деплой. Требует lint зелёным.
+  deploy:
     needs: lint
     runs-on: ubuntu-latest
+    environment: production   # даёт возможность включить manual approval в Settings → Environments
+    outputs:
+      deployed: ${{ steps.run_deploy.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - uses: ./.github/actions/setup-ansible
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+          vault-password: ${{ secrets.VAULT_PASS }}
 
-      # npm-кэш (actions/setup-node) безопасен всегда: кэшируется только
-      # ~/.npm по хэшу package-lock.json, на корректность сборки не влияет.
-      - name: Install dependencies
-        run: npm ci
-
-      # ВАЖНО (обязательно сделать руками один раз, см. итог сообщения):
-      # в prisma/schema.prisma нужно явно указать binaryTargets, иначе
-      # движок Prisma, собранный на раннере (Ubuntu 24.04), может не
-      # совпасть по версии OpenSSL с сервером (Ubuntu 22.04) и рухнуть
-      # в рантайме с "Unable to load query engine".
-      - name: Generate Prisma client
-        run: npx prisma generate
-
-      # Кэш .next/cache (персистентный кэш Turbopack, Next 16.3+) — ОПЦИОНАЛЬНО.
-      # Отключено по умолчанию: известная проблема (vercel/next.js#87283) —
-      # при восстановлении кэша от другого коммита через restore-keys
-      # Turbopack иногда отдаёт устаревший пререндер страницы. Для прод-сборки
-      # надёжность важнее пары секунд экономии. Если хотите включить —
-      # раскомментируйте блок ниже и уберите restore-keys (только точное
-      # совпадение по текущему коммиту, без "похожего" кэша).
-      # - uses: actions/cache@v4
-      #   with:
-      #     path: .next/cache
-      #     key: nextjs-${{ hashFiles('package-lock.json') }}-${{ github.sha }}
-
-      - name: Build (Next.js standalone)
-        run: npm run build
-        env:
-          NODE_OPTIONS: "--max-old-space-size=3072"   # раннеру можно не экономить память
-
-      - name: Verify standalone output exists
-        run: test -f .next/standalone/server.js
-
-      # ── Собираем релиз-артефакт: всё, что нужно серверу, чтобы просто
-      #    распаковать и запустить — БЕЗ npm install и БЕЗ git на VPS.
-      - name: Assemble deployable artifact
-        run: |
-          set -euo pipefail
-          rm -rf stage
-          mkdir -p stage/app stage/migrate
-
-          # --- app: самодостаточный standalone-сервер ---
-          cp -r .next/standalone/. stage/app/
-          mkdir -p stage/app/.next/static
-          cp -r .next/static/. stage/app/.next/static/
-          cp -r public stage/app/public
-
-          # --- migrate: только то, что нужно для `prisma migrate deploy` ---
-          mkdir -p stage/migrate/prisma
-          cp prisma/schema.prisma stage/migrate/prisma/
-          cp -r prisma/migrations stage/migrate/prisma/
-          mkdir -p stage/migrate/node_modules
-          cp -r node_modules/prisma stage/migrate/node_modules/
-          cp -r node_modules/@prisma stage/migrate/node_modules/
-          cp -r node_modules/.bin stage/migrate/node_modules/.bin
-
-          cat > stage/BUILD_INFO.json <<EOF
-          {
-            "commit": "${{ github.sha }}",
-            "ref": "${{ github.ref_name }}",
-            "built_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-            "run_id": "${{ github.run_id }}"
-          }
-          EOF
-
-          tar -czf release.tar.gz -C stage .
-          du -sh release.tar.gz
-
-      - name: Upload artifact (для аудита/ручного редеплоя без ребилда)
-        uses: actions/upload-artifact@v4
+      - uses: ./.github/actions/setup-ssh
         with:
-          name: release-${{ github.sha }}
-          path: release.tar.gz
-          retention-days: 7
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ env.DEPLOY_HOST }}
 
-  # ──────────────────────────────────────────────────────────────
-  # 3. ДЕПЛОЙ. Единственный job с доступом к серверу и секретам.
-  #    Скачивает уже готовый tar.gz и просто раскладывает его через ansible.
-  # ──────────────────────────────────────────────────────────────
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: release-${{ github.sha }}
-
-      - name: Install Ansible
-        run: pipx install --include-deps ansible
-
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          cat << 'EOF' > ~/.ssh/id_rsa
-          ${{ secrets.SSH_PRIVATE_KEY }}
-          EOF
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "${{ env.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Create vault password file
-        run: |
-          echo "${{ secrets.VAULT_PASS }}" > .vault_pass
-          chmod 600 .vault_pass
-
-      - name: Run Ansible playbook (передаём путь к уже собранному артефакту)
+      - name: Run Ansible playbook
+        id: run_deploy
         run: |
           ansible-playbook -i deploy/ansible/inventory.yml \
             deploy/ansible/playbook.yml \
-            --vault-password-file .vault_pass \
-            --extra-vars "release_tarball=${{ github.workspace }}/release.tar.gz"
+            --vault-password-file .vault_pass
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
-  # ──────────────────────────────────────────────────────────────
-  # 4. Внешняя проверка — через домен, снаружи сервера.
-  # ──────────────────────────────────────────────────────────────
+  # 3. Внешняя проверка — бьём в сайт СНАРУЖИ, через nginx/домен, а не с самого
+  #    сервера, чтобы поймать и проблемы DNS/SSL/nginx, а не только PM2.
   smoke-test:
     needs: deploy
     runs-on: ubuntu-latest
@@ -189,9 +78,7 @@ jobs:
           done
           [ "$code" = "200" ] || { echo "::error::Homepage unhealthy after deploy ($code)"; exit 1; }
 
-  # ──────────────────────────────────────────────────────────────
-  # 5. Автооткат при падении деплоя или smoke-test.
-  # ──────────────────────────────────────────────────────────────
+  # 4. Автооткат — запускается ТОЛЬКО если deploy или smoke-test упали.
   rollback:
     needs: [deploy, smoke-test]
     if: failure()
@@ -199,17 +86,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Ansible
-        run: pipx install --include-deps ansible
+      - uses: ./.github/actions/setup-ansible
+        with:
+          vault-password: ${{ secrets.VAULT_PASS }}
 
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          cat << 'EOF' > ~/.ssh/id_rsa
-          ${{ secrets.SSH_PRIVATE_KEY }}
-          EOF
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "${{ env.DEPLOY_HOST }}" >> ~/.ssh/known_hosts
+      - uses: ./.github/actions/setup-ssh
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ env.DEPLOY_HOST }}
 
       - name: Roll back to previous release
         run: |
@@ -218,27 +102,5 @@ jobs:
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
 
-  # ──────────────────────────────────────────────────────────────
-  # 6. Уведомление в Telegram — всегда, независимо от исхода.
-  # ──────────────────────────────────────────────────────────────
-  notify:
-    needs: [lint, build, deploy, smoke-test, rollback]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Compose status
-        id: status
-        run: |
-          if [ "${{ contains(needs.*.result, 'failure') }}" = "true" ]; then
-            echo "value=failure" >> "$GITHUB_OUTPUT"
-          else
-            echo "value=success" >> "$GITHUB_OUTPUT"
-          fi
-
-      - uses: ./.github/actions/notify-telegram
-        with:
-          bot-token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          chat-id: ${{ secrets.TELEGRAM_CHAT_ID }}
-          status: ${{ steps.status.outputs.value }}
+      - name: Fail the run so it's visually red in Actions tab
+        run: exit 1

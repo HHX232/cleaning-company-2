@@ -1,0 +1,35 @@
+---
+- name: Clone repository into new release directory
+  ansible.builtin.git:
+    repo: "{{ repo_url }}"
+    dest: "{{ release_path }}"
+    version: "{{ branch }}"
+  become_user: dev
+
+# Каждый релиз клонируется в чистую директорию — поэтому больше не нужен
+# и не используется хрупкий флаг "npm_ci.changed / git_result.changed" для
+# решения, пересобирать приложение или нет. Раньше именно эта условная
+# логика ("when: build_result.rc == 0", где build_result мог быть
+# undefined, если сборка была пропущена) была одной из причин, по которой
+# копирование статики в standalone иногда молча пропускалось.
+
+- name: Symlink shared .env into release
+  ansible.builtin.file:
+    src: "{{ app_dir }}/shared/.env"
+    dest: "{{ release_path }}/.env"
+    state: link
+    force: true
+
+- name: Symlink shared prisma dir (SQLite db must persist across releases)
+  ansible.builtin.file:
+    src: "{{ app_dir }}/shared/prisma"
+    dest: "{{ release_path }}/prisma_shared"
+    state: link
+    force: true
+
+- name: Point prisma/dev.db in schema.prisma-relative location to shared db
+  ansible.builtin.file:
+    src: "{{ app_dir }}/shared/prisma/dev.db"
+    dest: "{{ release_path }}/prisma/dev.db"
+    state: link
+    force: true

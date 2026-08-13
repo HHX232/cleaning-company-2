@@ -1,18 +1,12 @@
 ---
-# git и build-тулчейн больше НЕ нужны на сервере: код собирается на
-# GitHub Actions раннере, сюда приезжает уже готовый standalone-артефакт.
-# Это заодно освобождает и диск (не нужен .git, полный node_modules,
-# npm-кэш), и память (никогда больше не запускаем next build при 350МБ
-# свободной RAM).
-
-- name: Install system dependencies (curl, gnupg, nginx, tar)
+- name: Install system dependencies (git, nginx, curl, gnupg)
   ansible.builtin.apt:
-    name: [curl, gnupg, nginx, tar]
+    name: [git, nginx, curl, gnupg]
     state: present
     update_cache: true
     cache_valid_time: 3600
 
-- name: Check current Node.js major version
+- name: Check current Node.js major version (idempotency guard)
   ansible.builtin.command: node -v
   register: node_version_check
   changed_when: false
@@ -28,7 +22,7 @@
     node_version_check.rc != 0 or
     ('v' ~ nodejs_version) not in node_version_check.stdout
 
-- name: Install/upgrade Node.js runtime (нужен только чтобы ЗАПУСКАТЬ node)
+- name: Install/upgrade Node.js
   ansible.builtin.apt:
     name: nodejs
     state: latest

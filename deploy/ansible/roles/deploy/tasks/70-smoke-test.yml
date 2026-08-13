@@ -17,7 +17,7 @@
 
 - name: Verify at least one static chunk exists in the new release
   ansible.builtin.find:
-    paths: "{{ app_dir }}/current/app/.next/static/chunks"
+    paths: "{{ app_dir }}/current/.next/standalone/.next/static/chunks"
     patterns: "*.js"
   register: static_chunks_check
 

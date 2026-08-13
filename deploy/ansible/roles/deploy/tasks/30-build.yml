@@ -1,0 +1,50 @@
+---
+- name: Install npm dependencies (ci)
+  ansible.builtin.command: npm ci
+  args:
+    chdir: "{{ release_path }}"
+  become_user: dev
+  changed_when: true
+
+- name: Generate Prisma client
+  ansible.builtin.command: npx prisma generate
+  args:
+    chdir: "{{ release_path }}"
+  become_user: dev
+  changed_when: true
+
+- name: Run Prisma migrations (idempotent — deploy применяет только новые миграции)
+  ansible.builtin.command: npx prisma migrate deploy
+  args:
+    chdir: "{{ release_path }}"
+  become_user: dev
+  register: prisma_migrate
+  changed_when: "'No pending migrations' not in prisma_migrate.stdout"
+
+# ВАЖНО: сид базы НЕ запускается на каждый деплой (в старом плейбуке
+# "npx prisma db seed" выполнялся безусловно на проде — риск порчи/дублирования
+# данных). Сидинг переносим в отдельный ручной playbook (seed.yml) для первичной
+# инициализации окружения.
+
+- name: Build Next.js application (standalone, Turbopack — дефолтный бандлер в Next 16)
+  ansible.builtin.command: npm run build
+  args:
+    chdir: "{{ release_path }}"
+  become_user: dev
+  environment:
+    NODE_OPTIONS: "--max-old-space-size=768"
+  register: build_result
+  changed_when: true
+
+- name: Fail fast if standalone server.js was not produced
+  ansible.builtin.stat:
+    path: "{{ release_path }}/.next/standalone/server.js"
+  register: standalone_check
+
+- name: Assert standalone build actually exists
+  ansible.builtin.assert:
+    that: standalone_check.stat.exists
+    fail_msg: >
+      .next/standalone/server.js не создан. Сборка формально завершилась
+      без ошибки (rc=0), но output:'standalone' не сгенерировался — проверь
+      next.config.ts (output: 'standalone') и логи сборки выше.
