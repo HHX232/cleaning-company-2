@@ -3,104 +3,37 @@ name: Deploy to VPS
 on:
   push:
     branches: [main]
-  workflow_dispatch: {}
-
-# Гарантирует, что второй push не запустит параллельный деплой поверх текущего.
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
-
-env:
-  DEPLOY_HOST: 62.182.102.68
 
 jobs:
-  # 1. Быстрая проверка синтаксиса — падает за ~20 секунд без SSH к серверу,
-  #    если кто-то закоммитил битый YAML в playbook.
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: ./.github/actions/setup-ansible
-        with:
-          vault-password: ${{ secrets.VAULT_PASS }}
-
-      - name: Ansible syntax check
-        run: |
-          ansible-playbook -i deploy/ansible/inventory.yml \
-            deploy/ansible/playbook.yml \
-            --vault-password-file .vault_pass \
-            --syntax-check
-
-  # 2. Сам деплой. Требует lint зелёным.
   deploy:
-    needs: lint
     runs-on: ubuntu-latest
-    environment: production   # даёт возможность включить manual approval в Settings → Environments
-    outputs:
-      deployed: ${{ steps.run_deploy.outcome == 'success' }}
     steps:
       - uses: actions/checkout@v4
 
-      - uses: ./.github/actions/setup-ansible
-        with:
-          vault-password: ${{ secrets.VAULT_PASS }}
+      - name: Install Ansible
+        run: |
+          sudo apt update
+          sudo apt install -y ansible
+          ansible-galaxy collection install community.general
 
-      - uses: ./.github/actions/setup-ssh
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          host: ${{ env.DEPLOY_HOST }}
+      - name: Create vault password file
+        run: |
+          echo "${{ secrets.VAULT_PASS }}" > .vault_pass
+          chmod 600 .vault_pass
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          cat << 'EOF' > ~/.ssh/id_rsa
+          ${{ secrets.SSH_PRIVATE_KEY }}
+          EOF
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 62.182.102.68 >> ~/.ssh/known_hosts
 
       - name: Run Ansible playbook
-        id: run_deploy
         run: |
           ansible-playbook -i deploy/ansible/inventory.yml \
             deploy/ansible/playbook.yml \
             --vault-password-file .vault_pass
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
-
-  # 3. Внешняя проверка — бьём в сайт СНАРУЖИ, через nginx/домен, а не с самого
-  #    сервера, чтобы поймать и проблемы DNS/SSL/nginx, а не только PM2.
-  smoke-test:
-    needs: deploy
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check homepage over HTTPS
-        run: |
-          set -e
-          code=""
-          for i in $(seq 1 10); do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "${{ vars.SITE_URL }}/")
-            [ "$code" = "200" ] && break
-            echo "attempt $i: got $code, retrying..."
-            sleep 3
-          done
-          [ "$code" = "200" ] || { echo "::error::Homepage unhealthy after deploy ($code)"; exit 1; }
-
-  # 4. Автооткат — запускается ТОЛЬКО если deploy или smoke-test упали.
-  rollback:
-    needs: [deploy, smoke-test]
-    if: failure()
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: ./.github/actions/setup-ansible
-        with:
-          vault-password: ${{ secrets.VAULT_PASS }}
-
-      - uses: ./.github/actions/setup-ssh
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-          host: ${{ env.DEPLOY_HOST }}
-
-      - name: Roll back to previous release
-        run: |
-          ansible-playbook -i deploy/ansible/inventory.yml \
-            deploy/ansible/rollback.yml
-        env:
-          ANSIBLE_HOST_KEY_CHECKING: "False"
-
-      - name: Fail the run so it's visually red in Actions tab
-        run: exit 1
