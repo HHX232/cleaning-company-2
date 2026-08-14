@@ -74,7 +74,6 @@ export default function Footer({ id }: FooterProps) {
             <a href={`tel:+${company.phone.replace(/\D/g, "")}`} className="transition-colors hover:text-white">
               {company.phone}
             </a>
-            <span>{company.email}</span>
             <span>{company.city}, работаем по всей Беларуси</span>
             <a href={contactLinks.email} className="transition-colors hover:text-white">
               {feedbackEmail}

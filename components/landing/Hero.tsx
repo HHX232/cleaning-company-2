@@ -7,7 +7,7 @@ export default function Hero({ imageSrc }: { imageSrc?: string }) {
   return (
     <div className="relative mx-auto mt-4 mb-6 max-w-385 px-4 sm:mt-6 sm:px-6 lg:mb-37.5 lg:px-10">
       <section className="relative min-h-105 overflow-hidden rounded-[20px] bg-dark sm:min-h-120 lg:min-h-140 lg:rounded-[26px]">
-        <ImagePlaceholder label="Фото: клинер за работой" src={imageSrc} className="absolute inset-0" />
+        <ImagePlaceholder label="Фото: клинер за работой" src={imageSrc} className="absolute inset-0" priority />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(21,35,24,0.94)_0%,rgba(21,35,24,0.8)_45%,rgba(21,35,24,0.45)_100%)]" />
 
         <div className="relative flex h-full flex-col justify-center px-6 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-15">
@@ -27,7 +27,7 @@ export default function Hero({ imageSrc }: { imageSrc?: string }) {
               Заказать уборку
             </OrderButton>
             <a
-              href="#services"
+              href="#catalog"
               className="inline-flex items-center gap-2 border-b border-white/40 pb-0.5 text-sm font-bold text-white transition-colors duration-200 hover:border-white hover:text-primary sm:text-[15px]"
             >
               Смотреть услуги ↓

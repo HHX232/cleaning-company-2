@@ -96,7 +96,7 @@ export const feedbackEmail = "speckliningbel@yandex.by";
 export const contactLinks = {
   whatsapp: `https://wa.me/${messengerPhoneDigits}`,
   viber: `viber://chat?number=%2B${messengerPhoneDigits}`,
-  telegram: "https://t.me/mojkaokonbel",
+  telegram: "https://t.me/speckliningbel",
   email: `mailto:${feedbackEmail}`,
   chat: "#order",
 };

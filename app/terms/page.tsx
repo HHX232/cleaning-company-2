@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { company, feedbackEmail } from "@/lib/content";
+import type { ReactNode } from "react";
+import { company, contactLinks, feedbackEmail } from "@/lib/content";
 import Header from "@/components/landing/Header";
 import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
@@ -8,7 +9,10 @@ export const metadata: Metadata = {
   title: `Пользовательское соглашение — ${company.name}`,
 };
 
-const sections = [
+const linkClass = "underline hover:text-ink";
+const phoneHref = `tel:+${company.phone.replace(/\D/g, "")}`;
+
+const sections: { title: string; body: ReactNode }[] = [
   {
     title: "1. Общие положения",
     body: `Настоящее пользовательское соглашение регулирует условия использования сайта ${company.name} (далее — «Сайт») и оказания клининговых услуг. Оставляя заявку, регистрируя личный кабинет или иным образом используя Сайт, вы подтверждаете, что ознакомлены и согласны с условиями настоящего соглашения.`,
@@ -35,7 +39,19 @@ const sections = [
   },
   {
     title: "7. Контакты",
-    body: `По всем вопросам, связанным с настоящим соглашением, вы можете связаться с нами по адресу ${feedbackEmail} или по телефону ${company.phone}.`,
+    body: (
+      <>
+        По всем вопросам, связанным с настоящим соглашением, вы можете связаться с нами по адресу{" "}
+        <a href={contactLinks.email} className={linkClass}>
+          {feedbackEmail}
+        </a>{" "}
+        или по телефону{" "}
+        <a href={phoneHref} className={linkClass}>
+          {company.phone}
+        </a>
+        .
+      </>
+    ),
   },
 ];
 

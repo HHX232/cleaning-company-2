@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { company } from "@/lib/content";
 
 type DropdownItem = { label: string; href: string };
 type NavItem = { label: string; href?: string; dropdown?: DropdownItem[] };
@@ -107,6 +108,14 @@ function BurgerIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true">
       <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  );
+}
+
+function PhoneIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M3 5.5C3 4.67 3.67 4 4.5 4H7l2 4.5-2 1.5c.9 2.2 2.8 4.1 5 5l1.5-2L18 15v2.5c0 .83-.67 1.5-1.5 1.5C9.6 19 3 12.4 3 5.5Z" />
     </svg>
   );
 }
@@ -302,7 +311,7 @@ export default function NavClient({ serviceBlocks }: { serviceBlocks: ServiceBlo
       </nav>
 
       {/* Mobile trigger bar */}
-      <div className="flex items-center border-b border-border px-4 py-3 lg:hidden">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3 lg:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -312,6 +321,13 @@ export default function NavClient({ serviceBlocks }: { serviceBlocks: ServiceBlo
           <BurgerIcon />
           Меню
         </button>
+        <a
+          href={`tel:+${company.phone.replace(/\D/g, "")}`}
+          className="flex items-center gap-1.5 text-sm font-bold text-primary"
+        >
+          <PhoneIcon />
+          {company.phone}
+        </a>
       </div>
 
       {/* Mobile slide-in panel */}

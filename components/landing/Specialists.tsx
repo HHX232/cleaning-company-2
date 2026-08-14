@@ -22,7 +22,7 @@ export default function Specialists({ members }: SpecialistsProps) {
       <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
         {members.map((m) => (
           <div key={m.id} className="overflow-hidden rounded-2xl border border-border bg-surface text-center">
-            <div className="h-[180px]">
+            <div className="aspect-270/190">
               <ImagePlaceholder label={`Фото: ${m.name}`} src={m.photoUrl ?? undefined} />
             </div>
             <div className="p-4">

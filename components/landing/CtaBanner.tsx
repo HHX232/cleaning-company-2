@@ -4,6 +4,9 @@ type CtaBannerProps = {
   title: string;
   imageLabel: string;
   imageSrc?: string;
+  // Extra classes for the photo itself — e.g. "object-top" when the subject's
+  // face sits near the top of the frame and shouldn't be center-cropped.
+  imageClassName?: string;
   ctaLabel: string;
   ctaHref?: string;
   children: React.ReactNode;
@@ -13,6 +16,7 @@ export default function CtaBanner({
   title,
   imageLabel,
   imageSrc,
+  imageClassName = "",
   ctaLabel,
   ctaHref = "#order",
   children,
@@ -20,7 +24,7 @@ export default function CtaBanner({
   return (
     <section className="px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
       <div className="relative mx-auto min-h-72 max-w-[1200px] overflow-hidden rounded-[20px] bg-dark sm:min-h-[340px]">
-        <ImagePlaceholder label={imageLabel} src={imageSrc} className="absolute inset-0" />
+        <ImagePlaceholder label={imageLabel} src={imageSrc} className={`absolute inset-0 ${imageClassName}`} />
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,var(--color-dark)_0%,var(--color-hero-fade)_50%,transparent_82%)]" />
         <div className="relative max-w-[640px] px-5 py-7 sm:px-12 sm:py-11">
           <h2 className="mb-4 text-xl font-extrabold text-white sm:mb-5 sm:text-[28px]">{title}</h2>

@@ -72,7 +72,12 @@ export default function ServiceCategoryPage({
 
       <div className="relative mx-auto mt-4 mb-6 max-w-385 px-4 sm:mt-6 sm:px-6 lg:px-10">
         <section className="relative min-h-105 overflow-hidden rounded-[20px] bg-dark sm:min-h-115 lg:rounded-[26px]">
-          <ImagePlaceholder label="Фото: клинер за работой" src={heroImageUrl ?? undefined} className="absolute inset-0" />
+          <ImagePlaceholder
+            label="Фото: клинер за работой"
+            src={heroImageUrl ?? undefined}
+            className="absolute inset-0"
+            priority
+          />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(21,35,24,0.94)_0%,rgba(21,35,24,0.8)_45%,rgba(21,35,24,0.45)_100%)]" />
 
           <div className="relative flex h-full flex-col justify-center px-6 py-8 sm:px-10 sm:py-12 lg:px-14 lg:py-15">

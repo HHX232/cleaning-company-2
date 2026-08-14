@@ -168,7 +168,9 @@ export default function Header({ tagline = company.tagline }: HeaderProps) {
           <a href={`tel:+${company.phone.replace(/\D/g, "")}`} className="block font-bold text-ink hover:text-primary">
             {company.phone}
           </a>
-          <div className="text-muted">{company.email}</div>
+          <a href={`mailto:${company.email}`} className="block text-muted hover:text-primary">
+            {company.email}
+          </a>
         </div>
 
         <button

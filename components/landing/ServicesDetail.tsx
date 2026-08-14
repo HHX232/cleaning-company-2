@@ -59,17 +59,28 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,var(--color-dark)_0%,var(--color-hero-fade)_55%,transparent_100%)]" />
             <div className="relative px-5 py-5 sm:px-7 sm:py-6.5">
               <h3 className="mb-3 text-lg font-extrabold text-white sm:mb-4 sm:text-[22px]">{svc.title}</h3>
-              <div
-                className="mb-4 grid gap-x-4 gap-y-1.5 sm:mb-5 sm:gap-x-5.5"
-                style={{ gridTemplateColumns: svc.columns === 2 ? "1fr 1fr" : "1fr" }}
-              >
-                {displayItems(svc.items).map((it) => (
+              {(() => {
+                const items = displayItems(svc.items);
+                const renderItem = (it: string) => (
                   <div key={it} className="flex items-start gap-2 text-[13px] leading-snug text-[#f0f0f0] sm:text-sm">
                     <span className="font-extrabold text-primary">✓</span>
                     {it}
                   </div>
-                ))}
-              </div>
+                );
+                if (svc.columns !== 2) {
+                  return <div className="mb-4 flex flex-col gap-1.5 sm:mb-5">{items.map(renderItem)}</div>;
+                }
+                // Two independent columns (not one interleaved grid) so a
+                // longer, wrapping item on one side doesn't stretch the row
+                // and misalign the other column's checkmarks.
+                const half = Math.ceil(items.length / 2);
+                return (
+                  <div className="mb-4 grid grid-cols-2 gap-x-4 sm:mb-5 sm:gap-x-5.5">
+                    <div className="flex flex-col gap-1.5">{items.slice(0, half).map(renderItem)}</div>
+                    <div className="flex flex-col gap-1.5">{items.slice(half).map(renderItem)}</div>
+                  </div>
+                );
+              })()}
               <button
                 type="button"
                 onClick={openContactModal}

@@ -2,14 +2,25 @@ type ImagePlaceholderProps = {
   label: string;
   src?: string;
   className?: string;
+  /** Set for the page's above-the-fold hero photo so it loads eagerly instead of lazily. */
+  priority?: boolean;
 };
 
 // Stand-in for the design's drag-and-drop <image-slot>. Pass `src` to swap
 // in a real photo later without touching layout.
-export default function ImagePlaceholder({ label, src, className = "" }: ImagePlaceholderProps) {
+export default function ImagePlaceholder({ label, src, className = "", priority = false }: ImagePlaceholderProps) {
   if (src) {
-    // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" className={`h-full w-full object-cover ${className}`} />;
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={src}
+        alt=""
+        loading={priority ? "eager" : "lazy"}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+        className={`h-full w-full object-cover ${className}`}
+      />
+    );
   }
 
   return (

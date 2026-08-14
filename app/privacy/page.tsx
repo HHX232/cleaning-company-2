@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { company, feedbackEmail } from "@/lib/content";
+import type { ReactNode } from "react";
+import { company, contactLinks, feedbackEmail } from "@/lib/content";
 import Header from "@/components/landing/Header";
 import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
@@ -8,7 +9,10 @@ export const metadata: Metadata = {
   title: `Политика конфиденциальности — ${company.name}`,
 };
 
-const sections = [
+const linkClass = "underline hover:text-ink";
+const phoneHref = `tel:+${company.phone.replace(/\D/g, "")}`;
+
+const sections: { title: string; body: ReactNode }[] = [
   {
     title: "1. Общие положения",
     body: `Настоящая политика конфиденциальности определяет порядок обработки персональных данных пользователей сайта ${company.name} (далее — «Компания»). Используя сайт, оставляя заявку или регистрируя личный кабинет, вы подтверждаете согласие с условиями настоящей политики.`,
@@ -31,7 +35,19 @@ const sections = [
   },
   {
     title: "6. Контакты",
-    body: `По всем вопросам, связанным с обработкой персональных данных, вы можете связаться с нами по адресу ${feedbackEmail} или по телефону ${company.phone}.`,
+    body: (
+      <>
+        По всем вопросам, связанным с обработкой персональных данных, вы можете связаться с нами по адресу{" "}
+        <a href={contactLinks.email} className={linkClass}>
+          {feedbackEmail}
+        </a>{" "}
+        или по телефону{" "}
+        <a href={phoneHref} className={linkClass}>
+          {company.phone}
+        </a>
+        .
+      </>
+    ),
   },
 ];
 
