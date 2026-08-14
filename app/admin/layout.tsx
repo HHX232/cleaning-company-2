@@ -21,8 +21,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <div className="min-h-screen bg-bg text-ink">
-      <header className="flex items-center justify-between border-b border-border px-6 py-4">
-        <nav className="flex gap-6 text-sm font-semibold text-ink">
+      <header className="flex flex-col gap-3 border-b border-border px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
+        <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm font-semibold text-ink [&>a]:whitespace-nowrap [&>a:hover]:text-primary">
           <Link href="/admin">Главная страница</Link>
           <Link href="/admin/team">Команда</Link>
           <Link href="/admin/service-pages">Страницы услуг</Link>
@@ -38,8 +38,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link href="/admin/chats">Чаты</Link>
           <Link href="/admin/callbacks">Заявки на звонок</Link>
         </nav>
-        <form action={logout}>
-          <button type="submit" className="text-sm text-muted">
+        <form action={logout} className="shrink-0">
+          <button type="submit" className="text-sm whitespace-nowrap text-muted hover:text-ink">
             Выйти ({session.user.email})
           </button>
         </form>

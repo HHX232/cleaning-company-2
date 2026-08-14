@@ -10,10 +10,6 @@ export const homeImageSlots = [
   { key: "svc-flats", section: "Наши услуги", label: "Уборка квартир" },
   { key: "svc-houses", section: "Наши услуги", label: "Уборка домов" },
   { key: "svc-rooms", section: "Наши услуги", label: "Уборка помещений" },
-  { key: "staff-1", section: "Наша команда", label: "Клинер-универсал" },
-  { key: "staff-2", section: "Наша команда", label: "Бригадир" },
-  { key: "staff-3", section: "Наша команда", label: "Специалист по спецуборке" },
-  { key: "staff-4", section: "Наша команда", label: "Менеджер по заявкам" },
   { key: "cta-banner-home", section: "CTA-баннер", label: "Фото сотрудника компании" },
 ] as const;
 

@@ -56,5 +56,10 @@ export async function POST(request: Request) {
   revalidatePath("/");
   revalidatePath(redirectTo);
 
+  // AJAX uploads (ImageUploadRow) get JSON and refresh in place — no full-page
+  // navigation. The 303 redirect stays as a no-JS progressive-enhancement path.
+  if (request.headers.get("x-ajax-upload")) {
+    return Response.json({ ok: true, url: imageUrl(key, image.updatedAt) });
+  }
   return Response.redirect(new URL(redirectTo, request.url), 303);
 }

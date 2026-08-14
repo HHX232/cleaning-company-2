@@ -71,12 +71,8 @@ export const faq = [
   },
 ];
 
-export const specialists = [
-  { role: "Клинер-универсал", slotId: "staff-1", placeholder: "Фото специалиста", exp: "опыт от 3 лет" },
-  { role: "Бригадир", slotId: "staff-2", placeholder: "Фото специалиста", exp: "опыт от 5 лет" },
-  { role: "Специалист по спецуборке", slotId: "staff-3", placeholder: "Фото специалиста", exp: "опыт от 4 лет" },
-  { role: "Менеджер по заявкам", slotId: "staff-4", placeholder: "Фото специалиста", exp: "на связи 24/7" },
-];
+// Homepage "Наши специалисты" is driven by the TeamMember table
+// (/admin/team) — see components/landing/Specialists.tsx.
 
 // "Отзывы" now live in the Review table (admin-editable at /admin/reviews).
 

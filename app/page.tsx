@@ -56,16 +56,28 @@ const getReviews = unstable_cache(
   { revalidate: 600 },
 );
 
+const getTeamMembers = unstable_cache(
+  async () =>
+    prisma.teamMember.findMany({
+      orderBy: { order: "asc" },
+      select: { id: true, name: true, role: true, photoUrl: true },
+    }),
+  ["team-members"],
+  { revalidate: 600 },
+);
+
 export default async function Home() {
-  const [images, promos, serviceBlocks, calculatorOptions, reviews, priceData, galleryItems] = await Promise.all([
-    getHomeImages(),
-    getPromos(),
-    getServiceBlocks(),
-    getCalculatorOptions(),
-    getReviews(),
-    getPriceData(),
-    getGalleryItems(),
-  ]);
+  const [images, promos, serviceBlocks, calculatorOptions, reviews, priceData, galleryItems, teamMembers] =
+    await Promise.all([
+      getHomeImages(),
+      getPromos(),
+      getServiceBlocks(),
+      getCalculatorOptions(),
+      getReviews(),
+      getPriceData(),
+      getGalleryItems(),
+      getTeamMembers(),
+    ]);
   const bigServices = serviceBlocks.filter((b) => b.size === "BIG");
   const smallServices = serviceBlocks.filter((b) => b.size === "SMALL");
   const src = (key: string) => {
@@ -77,12 +89,10 @@ export default async function Home() {
   };
 
   const servicesImageSrcBySlot: Record<string, string> = {};
-  const specialistsImageSrcBySlot: Record<string, string> = {};
   for (const slot of homeImageSlots) {
     const url = src(slot.key);
     if (!url) continue;
     if (slot.key.startsWith("svc-")) servicesImageSrcBySlot[slot.key] = url;
-    if (slot.key.startsWith("staff-")) specialistsImageSrcBySlot[slot.key] = url;
   }
 
   return (
@@ -124,7 +134,7 @@ export default async function Home() {
         </p>
       </CtaBanner>
       <Faq title="Вопросы и ответы" items={faq} defaultOpenIndex={1} />
-      <Specialists imageSrcBySlot={specialistsImageSrcBySlot} />
+      <Specialists members={teamMembers} />
       <Reviews reviews={reviews} />
       <Footer id="order" />
     </div>
