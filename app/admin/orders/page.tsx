@@ -22,34 +22,101 @@ const nextAction: Record<string, { action: "assign" | "complete" | "pay"; label:
   canceled: null,
 };
 
+function newOrderForm(phone?: string) {
+  return (
+    <AdminForm action={createOrder} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
+      <input
+        type="text"
+        name="phone"
+        placeholder="Телефон"
+        defaultValue={phone}
+        required
+        className="col-span-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink sm:col-span-1"
+      />
+      <input
+        type="text"
+        name="title"
+        placeholder="Название"
+        required
+        className="col-span-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink sm:col-span-1"
+      />
+      <select name="kind" required className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink">
+        {kindOptions.map((k) => (
+          <option key={k.value} value={k.value}>
+            {k.label}
+          </option>
+        ))}
+      </select>
+      <input type="date" name="date" required className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink" />
+      <input type="time" name="time" className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink" />
+      <input
+        type="text"
+        name="address"
+        placeholder="Адрес (необязательно)"
+        className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
+      />
+      <input
+        type="number"
+        name="price"
+        placeholder="Цена, руб."
+        required
+        className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
+      />
+      <input
+        type="text"
+        name="serviceDetail"
+        placeholder="Детали услуги"
+        required
+        className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
+      />
+      <input
+        type="text"
+        name="staff"
+        placeholder="Бригада"
+        required
+        className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
+      />
+      <input
+        type="text"
+        name="payment"
+        placeholder="Оплата"
+        required
+        className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
+      />
+      <button
+        type="submit"
+        className="col-span-2 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary sm:col-span-1"
+      >
+        Создать
+      </button>
+    </AdminForm>
+  );
+}
+
 export default async function AdminOrdersPage() {
-  // Every account, all roles — an ADMIN testing the calculator/chat places
-  // real orders too (previously ADMIN was excluded here, which hid those
-  // orders), and BANNED users keep their in-flight orders manageable
-  // (banning only blocks their future sign-ins). Sorted so accounts with
-  // orders surface first.
-  const customers = await prisma.user.findMany({
-    include: { orders: { orderBy: { date: "desc" } } },
-    orderBy: { email: "asc" },
-  });
-  customers.sort((a, b) => b.orders.length - a.orders.length);
+  const orders = await prisma.order.findMany({ orderBy: { date: "desc" } });
+
+  const groups = new Map<string, typeof orders>();
+  for (const order of orders) {
+    groups.set(order.phone, [...(groups.get(order.phone) ?? []), order]);
+  }
+  const phoneGroups = [...groups.entries()].sort((a, b) => b[1].length - a[1].length);
 
   return (
     <div className="mx-auto max-w-250">
       <h1 className="mb-6 text-xl font-extrabold text-ink">Заказы</h1>
 
-      {customers.length === 0 && <p className="text-sm text-muted">Пока нет зарегистрированных пользователей.</p>}
+      {phoneGroups.length === 0 && <p className="text-sm text-muted">Пока нет заказов.</p>}
 
       <div className="flex flex-col gap-6">
-        {customers.map((customer) => (
-          <div key={customer.id} className="rounded-xl border border-border bg-surface p-5">
+        {phoneGroups.map(([phone, orders]) => (
+          <div key={phone} className="rounded-xl border border-border bg-surface p-5">
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div className="text-sm font-bold text-ink">{customer.email}</div>
+              <div className="text-sm font-bold text-ink">{phone}</div>
             </div>
 
             <div className="mb-4 flex flex-col gap-2">
-              {customer.orders.length === 0 && <p className="text-xs text-muted">Заказов ещё нет.</p>}
-              {customer.orders.map((order) => {
+              {orders.map((order) => {
                 const status = deriveStatus(order);
                 const presentation = statusPresentation[status];
                 const kind = kindPresentationFor(order.kind);
@@ -79,70 +146,16 @@ export default async function AdminOrdersPage() {
 
             <details className="rounded-lg border border-border bg-bg p-3">
               <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый заказ</summary>
-              <AdminForm action={createOrder} className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                <input type="hidden" name="userId" value={customer.id} />
-                <input
-                  type="text"
-                  name="title"
-                  placeholder="Название"
-                  required
-                  className="col-span-2 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink sm:col-span-1"
-                />
-                <select name="kind" required className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink">
-                  {kindOptions.map((k) => (
-                    <option key={k.value} value={k.value}>
-                      {k.label}
-                    </option>
-                  ))}
-                </select>
-                <input type="date" name="date" required className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink" />
-                <input type="time" name="time" className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink" />
-                <input
-                  type="text"
-                  name="address"
-                  placeholder="Адрес"
-                  required
-                  className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
-                />
-                <input
-                  type="number"
-                  name="price"
-                  placeholder="Цена, руб."
-                  required
-                  className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
-                />
-                <input
-                  type="text"
-                  name="serviceDetail"
-                  placeholder="Детали услуги"
-                  required
-                  className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
-                />
-                <input
-                  type="text"
-                  name="staff"
-                  placeholder="Бригада"
-                  required
-                  className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
-                />
-                <input
-                  type="text"
-                  name="payment"
-                  placeholder="Оплата"
-                  required
-                  className="rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs text-ink"
-                />
-                <button
-                  type="submit"
-                  className="col-span-2 rounded-lg bg-primary px-3 py-1.5 text-xs font-bold text-on-primary sm:col-span-1"
-                >
-                  Создать
-                </button>
-              </AdminForm>
+              {newOrderForm(phone)}
             </details>
           </div>
         ))}
       </div>
+
+      <details className="mt-6 rounded-lg border border-border bg-bg p-3">
+        <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый заказ (новый номер)</summary>
+        {newOrderForm()}
+      </details>
     </div>
   );
 }

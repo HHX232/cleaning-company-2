@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/",
       // Private / non-indexable areas.
-      disallow: ["/admin", "/api", "/profile", "/chat", "/login", "/register", "/forgot-password"],
+      disallow: ["/admin", "/api"],
     },
     sitemap: `${base}/sitemap.xml`,
   };

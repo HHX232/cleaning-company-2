@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 1240" width="1240" height="1240" role="img" aria-label="Специализированный клининг">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="300 150 700 700" width="700" height="700" role="img" aria-label="Специализированный клининг">
   <title>Специализированный клининг</title>
 
   <defs>
@@ -94,13 +94,4 @@
     <rect x="452" y="573" width="204" height="30" rx="14" fill="url(#handle)" transform="rotate(114 452 588)"/>
   </g>
 
-  <!-- ==== ТЕКСТ ==== -->
-  <g font-family="'Arial Black','Arial Bold',Arial,Helvetica,sans-serif" text-anchor="middle">
-    <text x="625" y="890" font-size="74" font-weight="900" fill="#152318" letter-spacing="1">СПЕЦИАЛИЗИРОВАННЫЙ</text>
-    <text x="637" y="968" font-size="56" font-weight="700" fill="#2f9e5b" letter-spacing="26">КЛИНИНГ</text>
-  </g>
-  <g stroke="#2f9e5b" stroke-width="4" stroke-linecap="round">
-    <line x1="128" y1="950" x2="372" y2="950"/>
-    <line x1="878" y1="950" x2="1122" y2="950"/>
-  </g>
 </svg>

@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { deriveStatus, formatRuDate, statusPresentation } from "@/lib/orderStatus";
-import { notifyAdmins } from "@/lib/telegramNotify";
+import { notifyAdmin } from "@/lib/telegramNotify";
 import { answerCallbackQuery, getUpdates, isTelegramConfigured, sendMessage, type TelegramUpdate } from "@/lib/telegram";
 
 type ConversationState = "awaiting_status_phone" | "awaiting_callback_phone";
@@ -28,8 +28,8 @@ function normalizeDigits(phone: string): string {
 }
 
 async function isLinkedAdmin(chatId: number): Promise<boolean> {
-  const admin = await prisma.user.findFirst({ where: { telegramChatId: String(chatId), role: "ADMIN" } });
-  return !!admin;
+  const settings = await prisma.adminSettings.findUnique({ where: { id: "admin" } });
+  return settings?.telegramChatId === String(chatId);
 }
 
 async function sendMenu(chatId: number) {
@@ -47,24 +47,42 @@ async function handleAdminTest(chatId: number, kind: AdminTestKind) {
     test_message: "🧪 <b>ТЕСТ: новое сообщение в чате</b>\nЗдравствуйте, подскажите пожалуйста стоимость уборки офиса",
     test_callback: "🧪 <b>ТЕСТ: заявка на звонок</b>\n+375291234567",
   };
-  await notifyAdmins(texts[kind]);
+  await notifyAdmin(texts[kind]);
   await sendMessage(chatId, "Тестовое уведомление отправлено всем подключённым админам ✅");
 }
 
-async function handleStartToken(chatId: number, token: string) {
-  const admin = await prisma.user.findFirst({ where: { telegramLinkToken: token, role: "ADMIN" } });
-  if (!admin) {
-    await sendMessage(chatId, "Ссылка недействительна или уже использована.");
+async function handleStartToken(chatId: number, rawToken: string) {
+  if (rawToken.startsWith("admin:")) {
+    const token = rawToken.slice("admin:".length);
+    const settings = await prisma.adminSettings.findFirst({ where: { telegramLinkToken: token } });
+    if (!settings) {
+      await sendMessage(chatId, "Ссылка недействительна или уже использована.");
+      return;
+    }
+    await prisma.adminSettings.update({
+      where: { id: settings.id },
+      data: { telegramChatId: String(chatId), telegramLinkToken: null },
+    });
+    await sendMessage(chatId, "✅ Аккаунт подключён! Теперь сюда будут приходить заявки на уборку и звонки.");
     return;
   }
-  await prisma.user.update({
-    where: { id: admin.id },
-    data: { telegramChatId: String(chatId), telegramLinkToken: null },
-  });
-  await sendMessage(
-    chatId,
-    "✅ Аккаунт подключён! Теперь сюда будут приходить заявки на уборку, звонки и новые сообщения в чате.",
-  );
+
+  if (rawToken.startsWith("cust:")) {
+    const token = rawToken.slice("cust:".length);
+    const link = await prisma.phoneTelegramLink.findFirst({ where: { linkToken: token } });
+    if (!link) {
+      await sendMessage(chatId, "Ссылка недействительна или уже использована.");
+      return;
+    }
+    await prisma.phoneTelegramLink.update({
+      where: { phone: link.phone },
+      data: { chatId: String(chatId), linkToken: null },
+    });
+    await sendMessage(chatId, "✅ Готово! Теперь сюда будут приходить уведомления о статусе ваших заказов.");
+    return;
+  }
+
+  await sendMessage(chatId, "Ссылка недействительна.");
 }
 
 async function handleStatusPhone(chatId: number, phoneText: string) {
@@ -76,23 +94,20 @@ async function handleStatusPhone(chatId: number, phoneText: string) {
     return;
   }
 
-  const candidates = await prisma.user.findMany({ where: { phone: { not: null } }, select: { id: true, phone: true } });
-  const match = candidates.find((u) => normalizeDigits(u.phone ?? "") === digits);
+  const candidates = await prisma.order.findMany({ select: { phone: true }, distinct: ["phone"] });
+  const match = candidates.find((o) => normalizeDigits(o.phone) === digits);
   if (!match) {
     await sendMessage(chatId, "Не нашли заказов с таким номером телефона. Проверьте номер или оставьте заявку на сайте.");
     return;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: match.id },
-    include: { orders: { orderBy: { date: "desc" } } },
-  });
-  if (!user || user.orders.length === 0) {
+  const orders = await prisma.order.findMany({ where: { phone: match.phone }, orderBy: { date: "desc" } });
+  if (orders.length === 0) {
     await sendMessage(chatId, "Заказов пока нет.");
     return;
   }
 
-  const lines = user.orders.map((o) => {
+  const lines = orders.map((o) => {
     const status = deriveStatus(o);
     return `• ${o.title} — ${statusPresentation[status].label}\n  ${formatRuDate(o.date, false)}, ${o.price} руб.`;
   });
@@ -106,7 +121,7 @@ async function handleCallbackPhone(chatId: number, phoneText: string) {
   await prisma.callbackRequest.create({
     data: { phone: trimmed, source: "telegram", telegramChatId: String(chatId) },
   });
-  notifyAdmins(`📞 <b>Заявка на звонок (Telegram)</b>\n${trimmed}`);
+  notifyAdmin(`📞 <b>Заявка на звонок (Telegram)</b>\n${trimmed}`);
   await sendMessage(chatId, "Спасибо! Заявка принята, мы вам перезвоним.");
 }
 

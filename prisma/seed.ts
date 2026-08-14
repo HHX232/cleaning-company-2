@@ -1,7 +1,5 @@
-import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
-import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 import { putImage } from "../lib/imageStorage";
 import { servicePages as pages, serviceBlocks, galleryItems } from "./seedData";
@@ -112,8 +110,6 @@ const reviews = [
   { stars: 5, text: "[отзыв клиента о срочной уборке перед заездом]", service: "Срочная уборка", order: 9 },
 ];
 
-const adminEmail = "6380311jurasik@gmail.com";
-
 const whyUsPhotos = [
   { key: "why-us-reason1", file: "reason1.webp", mimeType: "image/webp" },
   { key: "why-us-reason2", file: "reason2.webp", mimeType: "image/webp" },
@@ -190,18 +186,8 @@ async function main() {
   });
   console.log("Seeded About page (create-if-missing).");
 
-  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
-  if (!existingAdmin) {
-    const password = randomBytes(9).toString("base64url");
-    const passwordHash = await bcrypt.hash(password, 10);
-    await prisma.user.create({ data: { email: adminEmail, passwordHash, role: "ADMIN" } });
-    console.log(`Seeded admin user. Login at /admin/login with:`);
-    console.log(`  email:    ${adminEmail}`);
-    console.log(`  password: ${password}`);
-    console.log(`(Change this password after first login — there's no self-service change yet.)`);
-  } else {
-    console.log(`Admin user ${adminEmail} already exists, left untouched.`);
-  }
+  // Admin login is a single hardcoded credential pair (ADMIN_EMAIL /
+  // ADMIN_PASSWORD_HASH env vars, see lib/auth.ts) — nothing to seed.
 }
 
 main()

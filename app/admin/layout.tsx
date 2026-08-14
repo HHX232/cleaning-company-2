@@ -28,15 +28,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <Link href="/admin/service-pages">Страницы услуг</Link>
           <Link href="/admin/about">О компании</Link>
           <Link href="/admin/orders">Заказы</Link>
-          <Link href="/admin/users">Пользователи</Link>
           <Link href="/admin/promos">Акции</Link>
           <Link href="/admin/services">Услуги</Link>
           <Link href="/admin/gallery">Примеры работ</Link>
           <Link href="/admin/calculator">Калькулятор</Link>
           <Link href="/admin/prices">Цены</Link>
           <Link href="/admin/reviews">Отзывы</Link>
-          <Link href="/admin/chats">Чаты</Link>
           <Link href="/admin/callbacks">Заявки на звонок</Link>
+          <Link href="/admin/settings">Настройки</Link>
         </nav>
         <form action={logout} className="shrink-0">
           <button type="submit" className="text-sm whitespace-nowrap text-muted hover:text-ink">

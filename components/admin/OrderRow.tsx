@@ -83,6 +83,10 @@ export default function OrderRow({
                 <input type="text" name="title" defaultValue={order.title} required className={field} />
               </label>
               <label className={lbl}>
+                Телефон
+                <input type="text" name="phone" defaultValue={order.phone} required className={field} />
+              </label>
+              <label className={lbl}>
                 Дата уборки
                 <input type="date" name="date" defaultValue={toDateInputValue(order.date)} className={field} />
               </label>
@@ -92,7 +96,7 @@ export default function OrderRow({
               </label>
               <label className={lbl}>
                 Адрес
-                <input type="text" name="address" defaultValue={order.address} className={field} />
+                <input type="text" name="address" defaultValue={order.address ?? ""} className={field} />
               </label>
               <label className={lbl}>
                 Цена, руб.

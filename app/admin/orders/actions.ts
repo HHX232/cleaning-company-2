@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { OrderKind } from "@/lib/dbEnums";
+import { deriveStatus } from "@/lib/orderStatus";
+import { notifyCustomer } from "@/lib/telegramNotify";
 
 async function requireAdmin() {
   const session = await auth();
@@ -15,7 +17,7 @@ async function requireAdmin() {
 export async function createOrder(formData: FormData) {
   await requireAdmin();
 
-  const userId = String(formData.get("userId") ?? "");
+  const phone = String(formData.get("phone") ?? "").trim();
   const kind = String(formData.get("kind") ?? "") as OrderKind;
   const title = String(formData.get("title") ?? "").trim();
   const dateStr = String(formData.get("date") ?? "");
@@ -26,16 +28,15 @@ export async function createOrder(formData: FormData) {
   const staff = String(formData.get("staff") ?? "").trim();
   const payment = String(formData.get("payment") ?? "").trim();
 
-  if (!userId || !title || !dateStr) return;
+  if (!phone || !title || !dateStr) return;
 
   const date = new Date(`${dateStr}T${timeStr || "00:00"}`);
 
   await prisma.order.create({
-    data: { userId, kind, title, date, address, price, serviceDetail, staff, payment },
+    data: { phone, kind, title, date, address: address || null, price, serviceDetail, staff, payment },
   });
 
   revalidatePath("/admin/orders");
-  revalidatePath("/profile");
 }
 
 const advanceFields = {
@@ -45,16 +46,23 @@ const advanceFields = {
   cancel: "canceledAt",
 } as const;
 
+const advanceStatusText: Record<keyof typeof advanceFields, string> = {
+  assign: "Бригада назначена на ваш заказ",
+  complete: "Ваш заказ выполнен",
+  pay: "Оплата вашего заказа подтверждена",
+  cancel: "Ваш заказ отменён",
+};
+
 export async function advanceOrderStatus(orderId: string, action: keyof typeof advanceFields) {
   await requireAdmin();
 
-  await prisma.order.update({
+  const order = await prisma.order.update({
     where: { id: orderId },
     data: { [advanceFields[action]]: new Date() },
   });
 
   revalidatePath("/admin/orders");
-  revalidatePath("/profile");
+  notifyCustomer(order.phone, `📋 <b>${order.title}</b>\n${advanceStatusText[action]}.`);
 }
 
 // datetime-local value ("YYYY-MM-DDTHH:mm") → Date, or null when cleared.
@@ -71,6 +79,7 @@ function parseDateTimeLocal(raw: FormDataEntryValue | null): Date | null {
 export async function updateOrderFull(orderId: string, formData: FormData) {
   await requireAdmin();
 
+  const phone = String(formData.get("phone") ?? "").trim();
   const kind = String(formData.get("kind") ?? "") as OrderKind;
   const title = String(formData.get("title") ?? "").trim();
   const dateStr = String(formData.get("date") ?? "");
@@ -81,17 +90,22 @@ export async function updateOrderFull(orderId: string, formData: FormData) {
   const staff = String(formData.get("staff") ?? "").trim();
   const payment = String(formData.get("payment") ?? "").trim();
 
-  if (!title || !dateStr) return;
+  if (!phone || !title || !dateStr) return;
   const date = new Date(`${dateStr}T${timeStr || "00:00"}`);
   if (Number.isNaN(date.getTime())) return;
 
-  await prisma.order.update({
+  const before = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!before) return;
+  const statusBefore = deriveStatus(before);
+
+  const order = await prisma.order.update({
     where: { id: orderId },
     data: {
+      phone,
       kind,
       title,
       date,
-      address,
+      address: address || null,
       price: Number.isNaN(price) ? 0 : price,
       serviceDetail,
       staff,
@@ -104,12 +118,15 @@ export async function updateOrderFull(orderId: string, formData: FormData) {
   });
 
   revalidatePath("/admin/orders");
-  revalidatePath("/profile");
+
+  const statusAfter = deriveStatus(order);
+  if (statusAfter !== statusBefore) {
+    notifyCustomer(order.phone, `📋 <b>${order.title}</b>\nСтатус заказа обновлён.`);
+  }
 }
 
 export async function deleteOrder(orderId: string) {
   await requireAdmin();
   await prisma.order.delete({ where: { id: orderId } });
   revalidatePath("/admin/orders");
-  revalidatePath("/profile");
 }

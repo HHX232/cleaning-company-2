@@ -1,7 +1,6 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -13,24 +12,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+      // Single hardcoded admin — no accounts/DB. Credentials live in env
+      // (ADMIN_PASSWORD_HASH is a bcrypt hash, never the plaintext).
       async authorize(credentials) {
         const email = credentials?.email;
         const password = credentials?.password;
         if (typeof email !== "string" || typeof password !== "string")
           return null;
 
-        const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminHash = process.env.ADMIN_PASSWORD_HASH;
+        if (!adminEmail || !adminHash) return null;
+        if (email !== adminEmail) return null;
 
-        const valid = await bcrypt.compare(password, user.passwordHash);
+        const valid = await bcrypt.compare(password, adminHash);
         if (!valid) return null;
 
-        // Banned accounts can't sign in at all — same generic failure as
-        // wrong credentials, so a banned user can't tell the difference
-        // from the login screen.
-        if (user.role === "BANNED") return null;
-
-        return { id: user.id, email: user.email, role: user.role };
+        return { id: "admin", email: adminEmail, role: "ADMIN" };
       },
     }),
   ],

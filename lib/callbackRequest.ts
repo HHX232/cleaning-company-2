@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { notifyAdmins } from "@/lib/telegramNotify";
+import { notifyAdmin } from "@/lib/telegramNotify";
 
 export async function submitCallbackRequest(phone: string): Promise<{ ok: boolean; message: string }> {
   const trimmed = phone.trim();
@@ -13,7 +13,7 @@ export async function submitCallbackRequest(phone: string): Promise<{ ok: boolea
   await prisma.callbackRequest.create({ data: { phone: trimmed, source: "site" } });
   revalidatePath("/admin/callbacks");
 
-  notifyAdmins(`📞 <b>Заявка на звонок</b>\n${trimmed}`);
+  notifyAdmin(`📞 <b>Заявка на звонок</b>\n${trimmed}`);
 
   return { ok: true, message: "Заявка отправлена!" };
 }

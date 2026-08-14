@@ -21,18 +21,23 @@ export async function generateTelegramLinkToken(): Promise<{ ok: true; url: stri
   }
 
   const token = crypto.randomBytes(16).toString("hex");
-  await prisma.user.update({ where: { id: session.user.id }, data: { telegramLinkToken: token } });
+  await prisma.adminSettings.upsert({
+    where: { id: "admin" },
+    update: { telegramLinkToken: token },
+    create: { id: "admin", telegramLinkToken: token },
+  });
 
-  return { ok: true, url: `https://t.me/${username}?start=${token}` };
+  return { ok: true, url: `https://t.me/${username}?start=admin:${token}` };
 }
 
 export async function disconnectTelegram(): Promise<void> {
   const session = await auth();
   if (session?.user.role !== "ADMIN") return;
 
-  await prisma.user.update({
-    where: { id: session.user.id },
-    data: { telegramChatId: null, telegramLinkToken: null },
+  await prisma.adminSettings.upsert({
+    where: { id: "admin" },
+    update: { telegramChatId: null, telegramLinkToken: null },
+    create: { id: "admin" },
   });
-  revalidatePath("/profile");
+  revalidatePath("/admin/settings");
 }

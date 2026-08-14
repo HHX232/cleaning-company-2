@@ -1,10 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname } from "next/navigation";
 import { contactLinks } from "@/lib/content";
 import { TelegramIcon, ViberIcon, WhatsAppIcon } from "@/components/ui/MessengerIcons";
-import { useContactModal } from "./ContactModalProvider";
+
+declare global {
+  interface Window {
+    Tawk_API?: { showWidget?: () => void; maximize?: () => void };
+  }
+}
+
+function openTawkChat() {
+  const api = window.Tawk_API;
+  if (!api) return;
+  api.showWidget?.();
+  api.maximize?.();
+}
 
 function ChatIcon() {
   return (
@@ -22,10 +33,6 @@ const messengerItems = [
 
 export default function FloatingContact() {
   const [open, setOpen] = useState(false);
-  const openContactModal = useContactModal();
-  const pathname = usePathname();
-
-  if (pathname?.startsWith("/chat")) return null;
 
   const itemLabelClass =
     "rounded-full bg-black/80 px-4 py-2 text-sm font-semibold whitespace-nowrap text-white shadow-lg";
@@ -41,7 +48,7 @@ export default function FloatingContact() {
           type="button"
           onClick={() => {
             setOpen(false);
-            openContactModal();
+            openTawkChat();
           }}
           className="flex cursor-pointer items-center gap-3 opacity-0 transition-all duration-200 ease-out"
           style={{ animation: `fab-item-in 200ms ease-out 0ms forwards` }}

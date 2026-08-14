@@ -118,7 +118,7 @@ export default async function Home() {
         title="Специализированный-клининг – уборка любой сложности 24/7!"
         imageLabel="Фото: сотрудник компании"
         imageSrc={src("cta-banner-home")}
-        imageClassName="object-top"
+        imageClassName="object-[center_30%]"
         ctaLabel="Заказать консультацию"
       >
         <p className="mb-4 border-l-[3px] border-primary pl-4 text-sm leading-relaxed font-semibold text-[#f2f2f2] sm:mb-4.5 sm:text-base">

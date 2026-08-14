@@ -42,7 +42,7 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
   return (
     <section id="catalog" className="px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
       <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">
-        <Link href="/#calculator" className="transition-colors hover:text-primary">
+        <Link href="/#prices" className="transition-colors hover:text-primary">
           Наши услуги
         </Link>
       </h2>

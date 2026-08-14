@@ -80,10 +80,9 @@ export default function PhoneConsentModal({
           />
           <input
             type="text"
-            required
             value={address}
             onChange={(e) => setAddress(e.target.value)}
-            placeholder="Адрес уборки"
+            placeholder="Адрес уборки (необязательно)"
             className="rounded-full border border-border px-4 py-3 text-sm text-ink outline-none transition-colors focus:border-primary"
           />
           <button

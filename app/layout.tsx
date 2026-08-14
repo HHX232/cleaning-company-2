@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Golos_Text } from "next/font/google";
-import { SessionProvider } from "next-auth/react";
+import Script from "next/script";
 import { Toaster } from "sonner";
 import FloatingContact from "@/components/landing/FloatingContact";
 import ContactModalProvider from "@/components/landing/ContactModalProvider";
@@ -56,16 +56,36 @@ export default function RootLayout({
   return (
     <html lang="ru" className={`${golosText.variable} scroll-smooth antialiased`}>
       <body className="font-sans">
-        <SessionProvider>
-          <Suspense fallback={null}>
-            <TopProgressBar />
-          </Suspense>
-          <ContactModalProvider>
-            {children}
-            <FloatingContact />
-          </ContactModalProvider>
-        </SessionProvider>
+        <Suspense fallback={null}>
+          <TopProgressBar />
+        </Suspense>
+        <ContactModalProvider>
+          {children}
+          <FloatingContact />
+        </ContactModalProvider>
         <Toaster position="top-right" />
+
+        {/* Tawk.to live chat. onLoad hides the default floating launcher —
+            it's opened instead from FloatingContact's "Написать в чат"
+            button via window.Tawk_API, so there's only one chat bubble. */}
+        <Script id="tawk-to" strategy="afterInteractive">
+          {`
+            var Tawk_API = Tawk_API || {};
+            var Tawk_LoadStart = new Date();
+            Tawk_API.onLoad = function () {
+              Tawk_API.hideWidget();
+            };
+            (function () {
+              var s1 = document.createElement("script"),
+                s0 = document.getElementsByTagName("script")[0];
+              s1.async = true;
+              s1.src = "https://embed.tawk.to/6a7f4aae8e924d1d4dd1b320/1k00jnf28";
+              s1.charset = "UTF-8";
+              s1.setAttribute("crossorigin", "*");
+              s0.parentNode.insertBefore(s1, s0);
+            })();
+          `}
+        </Script>
       </body>
     </html>
   );

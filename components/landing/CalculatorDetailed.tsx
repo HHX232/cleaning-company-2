@@ -12,9 +12,9 @@ import {
   labelFor,
   toDateInputString,
 } from "@/lib/calculator";
-import { createOrderFromCalculator, submitPhoneAndCreateOrder } from "@/lib/orderCreation";
-import RegisterModal from "./RegisterModal";
+import { createOrderFromCalculator } from "@/lib/orderCreation";
 import PhoneConsentModal from "./PhoneConsentModal";
+import TelegramOptInModal from "./TelegramOptInModal";
 import DateTimePicker from "./DateTimePicker";
 import { Pill, EmptyGroupNotice } from "./CalculatorPill";
 
@@ -33,10 +33,9 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
     desiredTime: null,
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [registerOpen, setRegisterOpen] = useState(false);
   const [phoneOpen, setPhoneOpen] = useState(false);
-  const [contactPrefill, setContactPrefill] = useState({ phone: "", address: "" });
-  const [submitting, setSubmitting] = useState(false);
+  const [telegramOpen, setTelegramOpen] = useState(false);
+  const [lastPhone, setLastPhone] = useState("");
 
   function handleDateTimeSelect(date: Date, time: string) {
     const urgencyKey = effectiveUrgencyKey(date, options.URGENCY);
@@ -53,28 +52,8 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
 
   const toggleExtra = (key: string) => setCalc((s) => ({ ...s, extras: { ...s.extras, [key]: !s.extras[key] } }));
 
-  async function handleSubmitOrder() {
-    setSubmitting(true);
-    const id = toast.loading("Отправляем заявку…");
-    const outcome = await createOrderFromCalculator(calc);
-    setSubmitting(false);
-
-    if (outcome.status === "created") {
-      toast.success("Заявка отправлена! Менеджер свяжется с вами.", { id });
-      return;
-    }
-    toast.dismiss(id);
-    if (outcome.status === "needs_phone") {
-      setContactPrefill({ phone: outcome.phone ?? "", address: outcome.address ?? "" });
-      setPhoneOpen(true);
-      return;
-    }
-    setRegisterOpen(true);
-  }
-
-  async function handleRegistered() {
-    setRegisterOpen(false);
-    await handleSubmitOrder();
+  function handleSubmitOrder() {
+    setPhoneOpen(true);
   }
 
   return (
@@ -277,7 +256,6 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
           <button
             type="button"
             onClick={handleSubmitOrder}
-            disabled={submitting}
             className="mt-2.5 cursor-pointer rounded-[9px] bg-primary px-5.5 py-3.5 text-center text-sm font-bold text-on-primary transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)] active:translate-y-0 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             Рассчитать точную стоимость
@@ -288,24 +266,24 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
         </div>
       </div>
 
-      <RegisterModal open={registerOpen} onClose={() => setRegisterOpen(false)} onRegistered={handleRegistered} />
       <PhoneConsentModal
-        key={`${contactPrefill.phone}::${contactPrefill.address}`}
         open={phoneOpen}
         onClose={() => setPhoneOpen(false)}
-        initialPhone={contactPrefill.phone}
-        initialAddress={contactPrefill.address}
         onSubmit={async (phone, address, consent) => {
           const id = toast.loading("Отправляем заявку…");
-          const outcome = await submitPhoneAndCreateOrder(phone, address, consent, calc);
+          const outcome = await createOrderFromCalculator(phone, address, consent, calc);
           if (outcome.ok) {
             toast.success("Заявка отправлена! Менеджер свяжется с вами.", { id });
+            setPhoneOpen(false);
+            setLastPhone(phone);
+            setTelegramOpen(true);
           } else {
             toast.dismiss(id);
           }
           return outcome;
         }}
       />
+      <TelegramOptInModal open={telegramOpen} phone={lastPhone} onClose={() => setTelegramOpen(false)} />
     </section>
   );
 }

@@ -9,13 +9,6 @@ export default auth((req) => {
   const isAdmin = req.auth?.user.role === "ADMIN";
   const { pathname } = req.nextUrl;
 
-  if (pathname.startsWith("/profile") || pathname.startsWith("/chat")) {
-    if (!isLoggedIn) {
-      return NextResponse.redirect(new URL("/login", req.url));
-    }
-    return NextResponse.next();
-  }
-
   if (pathname === "/admin/login") {
     if (isLoggedIn && isAdmin) {
       return NextResponse.redirect(new URL("/admin", req.url));
@@ -31,5 +24,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/admin/:path*", "/profile/:path*", "/chat/:path*"],
+  matcher: ["/admin/:path*"],
 };

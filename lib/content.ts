@@ -84,9 +84,10 @@ export const company = {
   email: "speckliningbel@yandex.by",
 };
 
-// Separate from company.phone above (the direct-call line) — this is the
-// dedicated WhatsApp/Viber contact number.
-const messengerPhone = "+375256432677";
+// Same number as company.phone above — kept as a separate constant since
+// WhatsApp/Viber need the raw digits while company.phone is the formatted
+// display string.
+const messengerPhone = company.phone;
 const messengerPhoneDigits = messengerPhone.replace(/\D/g, "");
 
 export const feedbackEmail = "speckliningbel@yandex.by";
