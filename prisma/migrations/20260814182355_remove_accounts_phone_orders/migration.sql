@@ -5,19 +5,19 @@ DROP INDEX IF EXISTS "User_telegramChatId_key";
 DROP INDEX IF EXISTS "User_email_key";
 
 PRAGMA foreign_keys=off;
-DROP TABLE "Chat";
+DROP TABLE IF EXISTS "Chat";
 PRAGMA foreign_keys=on;
 
 PRAGMA foreign_keys=off;
-DROP TABLE "ChatMessage";
+DROP TABLE IF EXISTS "ChatMessage";
 PRAGMA foreign_keys=on;
 
 PRAGMA foreign_keys=off;
-DROP TABLE "EmailVerification";
+DROP TABLE IF EXISTS "EmailVerification";
 PRAGMA foreign_keys=on;
 
 PRAGMA foreign_keys=off;
-DROP TABLE "User";
+DROP TABLE IF EXISTS "User";
 PRAGMA foreign_keys=on;
 
 CREATE TABLE "PhoneTelegramLink" (
@@ -56,7 +56,7 @@ CREATE TABLE "new_Order" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL
 );
-DROP TABLE "Order";
+DROP TABLE IF EXISTS "Order";
 ALTER TABLE "new_Order" RENAME TO "Order";
 PRAGMA foreign_keys=ON;
 PRAGMA defer_foreign_keys=OFF;
