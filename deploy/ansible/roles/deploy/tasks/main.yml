@@ -1,4 +1,19 @@
----
+- name: Remove conflicting NodeSource files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/nodesource.list
+    - /etc/apt/sources.list.d/nodesource.sources
+    - /etc/apt/sources.list.d/nodesource.list.save
+    - /etc/apt/keyrings/nodesource.gpg
+
+- name: Create keyrings directory
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+
 - name: Install system dependencies
   ansible.builtin.apt:
     name:
@@ -9,13 +24,19 @@
     state: present
     update_cache: true
 
-- name: Add Node.js APT repository
+- name: Download and dearmor NodeSource GPG key
   ansible.builtin.shell:
     cmd: |
       set -o pipefail
-      curl -fsSL https://deb.nodesource.com/setup_{{ nodejs_version }}.x | bash -
+      curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
     executable: /bin/bash
-    creates: /etc/apt/sources.list.d/nodesource.list
+    creates: /etc/apt/keyrings/nodesource.gpg
+
+- name: Add Node.js APT repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_{{ nodejs_version }}.x nodistro main"
+    state: present
+    filename: nodesource
 
 - name: Install Node.js
   ansible.builtin.apt:
@@ -42,55 +63,56 @@
     src: .env.j2
     dest: "{{ app_dir }}/.env"
     mode: "0600"
+    owner: dev
+    group: dev
 
 - name: Install npm dependencies
-  ansible.builtin.command:
-    cmd: npm ci
-    chdir: "{{ app_dir }}"
-  register: npm_ci
-  changed_when: true
+  community.general.npm:
+    path: "{{ app_dir }}"
+    ci: true
 
 - name: Run Prisma migrations
   ansible.builtin.command:
     cmd: npx prisma migrate deploy
     chdir: "{{ app_dir }}"
-  register: prisma_migrate
-  changed_when: true
+  when: git_result.changed
 
 - name: Generate Prisma client
   ansible.builtin.command:
     cmd: npx prisma generate
     chdir: "{{ app_dir }}"
-  register: prisma_generate
-  changed_when: true
+  when: git_result.changed
 
-- name: Seed database (if no dev.db exists)
+- name: Check if SQLite DB exists
+  ansible.builtin.stat:
+    path: "{{ app_dir }}/prisma/dev.db"
+  register: sqlite_db
+
+- name: Seed database
   ansible.builtin.command:
     cmd: npx prisma db seed
     chdir: "{{ app_dir }}"
-  register: prisma_seed
-  changed_when: true
+  when: not sqlite_db.stat.exists
 
-- name: Build Next.js application (standalone)
+- name: Build Next.js application
   ansible.builtin.command:
     cmd: npm run build
     chdir: "{{ app_dir }}"
   environment:
     NODE_OPTIONS: "--max-old-space-size=768"
-  register: build_result
-  changed_when: true
+  when: git_result.changed
 
 - name: Copy static assets to standalone
   ansible.builtin.copy:
-    src: "{{ app_dir }}/.next/static/"
-    dest: "{{ app_dir }}/.next/standalone/.next/static/"
+    src: "{{ app_dir }}/.next/static"
+    dest: "{{ app_dir }}/.next/standalone/.next/"
     remote_src: true
     mode: preserve
 
 - name: Copy public folder to standalone
   ansible.builtin.copy:
-    src: "{{ app_dir }}/public/"
-    dest: "{{ app_dir }}/.next/standalone/public/"
+    src: "{{ app_dir }}/public"
+    dest: "{{ app_dir }}/.next/standalone/"
     remote_src: true
     mode: preserve
 
@@ -103,8 +125,8 @@
 
 - name: Copy prisma folder into standalone
   ansible.builtin.copy:
-    src: "{{ app_dir }}/prisma/"
-    dest: "{{ app_dir }}/.next/standalone/prisma/"
+    src: "{{ app_dir }}/prisma"
+    dest: "{{ app_dir }}/.next/standalone/"
     remote_src: true
     mode: preserve
 
@@ -114,29 +136,43 @@
     owner: dev
     group: dev
     recurse: true
-    state: directory
 
-- name: Restart or start application via PM2
-  ansible.builtin.shell:
-    cmd: |
-      set -o pipefail
-      cd {{ app_dir }}
-      pm2 delete cleaning || true
-      pm2 start .next/standalone/server.js --name cleaning --node-args="--max-old-space-size=768"
-      pm2 save
-    executable: /bin/bash
-  register: pm2_result
-  changed_when: true
+- name: Check PM2 process state
+  ansible.builtin.command:
+    cmd: pm2 show cleaning
+  register: pm2_status
+  failed_when: false
+  changed_when: false
+  become: true
+  become_user: dev
 
-- name: Enable PM2 startup script (idempotent)
-  ansible.builtin.shell:
-    cmd: |
-      set -o pipefail
-      pm2 startup systemd -u root --hp /root || true
-    executable: /bin/bash
-    creates: /etc/systemd/system/pm2-root.service
-  register: pm2_startup
-  changed_when: true
+- name: Start application via PM2
+  ansible.builtin.command:
+    cmd: pm2 start .next/standalone/server.js --name cleaning --node-args="--max-old-space-size=768"
+    chdir: "{{ app_dir }}"
+  become: true
+  become_user: dev
+  when: pm2_status.rc != 0
+
+- name: Restart application via PM2
+  ansible.builtin.command:
+    cmd: pm2 restart cleaning --update-env
+    chdir: "{{ app_dir }}"
+  become: true
+  become_user: dev
+  when: pm2_status.rc == 0 and git_result.changed
+
+- name: Save PM2 state
+  ansible.builtin.command:
+    cmd: pm2 save
+  become: true
+  become_user: dev
+  changed_when: false
+
+- name: Enable PM2 startup script
+  ansible.builtin.command:
+    cmd: pm2 startup systemd -u dev --hp /home/dev
+    creates: /etc/systemd/system/pm2-dev.service
 
 - name: Deploy nginx config
   ansible.builtin.template:
@@ -159,8 +195,3 @@
     path: /etc/nginx/sites-enabled/default
     state: absent
   notify: Reload nginx
-
-- name: Reload nginx
-  ansible.builtin.service:
-    name: nginx
-    state: reloaded
