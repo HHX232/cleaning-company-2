@@ -1,0 +1,12 @@
+---
+app_name: cleaning
+app_dir: /opt/{{ app_name }}
+domain: "xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais"
+
+repo_url: https://github.com/HHX232/cleaning-company-2.git
+branch: main
+
+nodejs_version: "24.x"
+nodejs_install_script: "https://deb.nodesource.com/setup_{{ nodejs_version }}"
+
+pm2_instance: "{{ app_name }}"

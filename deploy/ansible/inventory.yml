@@ -1,6 +1,5 @@
 all:
   hosts:
-    cleaning-server:
-      ansible_host: 62.182.102.68
+    62.182.102.68:
       ansible_user: dev
       ansible_ssh_private_key_file: ~/.ssh/id_rsa
