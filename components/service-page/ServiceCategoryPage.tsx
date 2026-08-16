@@ -9,6 +9,7 @@ import ProcessSteps from "./ProcessSteps";
 import MidPageCta from "./MidPageCta";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import { howToOrder, seoText, serviceFaq, team } from "@/lib/serviceCategoryContent";
+import { teamPhotoDefaultFor } from "@/lib/teamPhotoDefaults";
 
 // Small pool of eyebrow slogans so the hero doesn't read identically on every
 // service page. Picked deterministically from the title so a given page always
@@ -141,10 +142,10 @@ export default function ServiceCategoryPage({
           {team.subtitle[1]}
         </p>
         <div className="mx-auto grid max-w-300 grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-          {teamMembers.map((m) => (
+          {teamMembers.map((m, i) => (
             <div key={m.id} className="overflow-hidden rounded-2xl border border-border bg-surface text-center">
               <div className="h-36 sm:h-44">
-                <ImagePlaceholder label={`Фото: ${m.name}`} src={m.photoUrl ?? undefined} />
+                <ImagePlaceholder label={`Фото: ${m.name}`} src={m.photoUrl ?? teamPhotoDefaultFor(i)} />
               </div>
               <div className="p-3.5">
                 <div className="text-sm font-bold text-ink">{m.name}</div>
