@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { deriveStatus, formatRuDate, statusPresentation } from "@/lib/orderStatus";
+import { deriveStatus, formatRuDate, formatRuDateTime, statusPresentation } from "@/lib/orderStatus";
 import { notifyAdmin } from "@/lib/telegramNotify";
 import { answerCallbackQuery, getUpdates, isTelegramConfigured, sendMessage, type TelegramUpdate } from "@/lib/telegram";
 
@@ -15,6 +15,11 @@ const conversationState = new Map<number, ConversationState>();
 const MENU_KEYBOARD = [
   [{ text: "📋 Статус моих уборок", callback_data: "status" }],
   [{ text: "📞 Оставить заявку на звонок", callback_data: "callback" }],
+];
+
+const ADMIN_KEYBOARD = [
+  [{ text: "📋 Последние заказы", callback_data: "admin_orders" }],
+  [{ text: "📞 Последние заявки на звонок", callback_data: "admin_callbacks" }],
 ];
 
 const ADMIN_TEST_KEYBOARD = [
@@ -33,8 +38,46 @@ async function isLinkedAdmin(chatId: number): Promise<boolean> {
 }
 
 async function sendMenu(chatId: number) {
-  const keyboard = (await isLinkedAdmin(chatId)) ? [...MENU_KEYBOARD, ...ADMIN_TEST_KEYBOARD] : MENU_KEYBOARD;
+  const keyboard = (await isLinkedAdmin(chatId))
+    ? [...MENU_KEYBOARD, ...ADMIN_KEYBOARD, ...ADMIN_TEST_KEYBOARD]
+    : MENU_KEYBOARD;
   await sendMessage(chatId, "Здравствуйте! Чем могу помочь?", { inlineKeyboard: keyboard });
+}
+
+// "Последние заказы" / "Последние заявки на звонок" — lets the admin check
+// straight from Telegram whether real requests actually reached the DB,
+// independent of whether the push notification for them arrived.
+async function handleRecentOrders(chatId: number) {
+  if (!(await isLinkedAdmin(chatId))) return;
+
+  const orders = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 10 });
+  if (orders.length === 0) {
+    await sendMessage(chatId, "Заказов пока нет.");
+    return;
+  }
+
+  const lines = orders.map((o) => {
+    const status = deriveStatus(o);
+    return `• ${o.title} — ${statusPresentation[status].label}\n  ${o.phone}${o.address ? `, ${o.address}` : ""}\n  ${formatRuDateTime(o.date)}, ${o.price} руб.`;
+  });
+  await sendMessage(chatId, `📋 <b>Последние заказы</b> (до 10):\n\n${lines.join("\n\n")}`);
+}
+
+async function handleRecentCallbacks(chatId: number) {
+  if (!(await isLinkedAdmin(chatId))) return;
+
+  const callbacks = await prisma.callbackRequest.findMany({ orderBy: { createdAt: "desc" }, take: 10 });
+  if (callbacks.length === 0) {
+    await sendMessage(chatId, "Заявок на звонок пока нет.");
+    return;
+  }
+
+  const lines = callbacks.map((c) => {
+    const handled = c.handledAt ? "обработана" : "новая";
+    const source = c.source === "telegram" ? "бот" : "сайт";
+    return `• ${c.phone} — ${handled}\n  ${formatRuDateTime(c.createdAt)}, источник: ${source}`;
+  });
+  await sendMessage(chatId, `📞 <b>Последние заявки на звонок</b> (до 10):\n\n${lines.join("\n\n")}`);
 }
 
 type AdminTestKind = "test_order" | "test_message" | "test_callback";
@@ -138,6 +181,10 @@ async function processUpdate(update: TelegramUpdate) {
     } else if (data === "callback") {
       conversationState.set(chatId, "awaiting_callback_phone");
       await sendMessage(chatId, "Введите номер телефона для связи:");
+    } else if (data === "admin_orders") {
+      await handleRecentOrders(chatId);
+    } else if (data === "admin_callbacks") {
+      await handleRecentCallbacks(chatId);
     } else if (data === "test_order" || data === "test_message" || data === "test_callback") {
       await handleAdminTest(chatId, data);
     }

@@ -32,6 +32,12 @@ export function isTelegramConfigured(): boolean {
 
 type InlineKeyboard = { text: string; callback_data: string }[][];
 
+// The server's network path to api.telegram.org has shown intermittent
+// ETIMEDOUT/abort failures in production. A single lost order/callback
+// notification with no retry means it's gone for good, so this retries a
+// few times on network-level failure (fetch throwing) — an HTTP-level
+// error response from Telegram (bad chat id, etc.) is not retried since
+// trying again won't fix it.
 export async function sendMessage(
   chatId: string | number,
   text: string,
@@ -44,13 +50,25 @@ export async function sendMessage(
     body.reply_markup = { inline_keyboard: opts.inlineKeyboard };
   }
 
-  const res = await fetch(apiUrl("sendMessage"), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    console.error("Telegram sendMessage failed:", res.status, await res.text().catch(() => ""));
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const res = await fetch(apiUrl("sendMessage"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+        signal: AbortSignal.timeout(15000),
+      });
+      if (!res.ok) {
+        console.error("Telegram sendMessage failed:", res.status, await res.text().catch(() => ""));
+      }
+      return;
+    } catch (err) {
+      console.error(`Telegram sendMessage network error (attempt ${attempt}/${maxAttempts}):`, err);
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+      }
+    }
   }
 }
 
@@ -76,7 +94,7 @@ export async function getBotUsername(): Promise<string | null> {
   return cachedBotUsername;
 }
 
-export async function getUpdates(offset: number, timeoutSec = 30): Promise<TelegramUpdate[]> {
+export async function getUpdates(offset: number, timeoutSec = 15): Promise<TelegramUpdate[]> {
   if (!isTelegramConfigured()) return [];
 
   const res = await fetch(apiUrl("getUpdates"), {
