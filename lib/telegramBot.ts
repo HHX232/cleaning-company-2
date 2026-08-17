@@ -52,8 +52,8 @@ async function handleAdminTest(chatId: number, kind: AdminTestKind) {
 }
 
 async function handleStartToken(chatId: number, rawToken: string) {
-  if (rawToken.startsWith("admin:")) {
-    const token = rawToken.slice("admin:".length);
+  if (rawToken.startsWith("admin_")) {
+    const token = rawToken.slice("admin_".length);
     const settings = await prisma.adminSettings.findFirst({ where: { telegramLinkToken: token } });
     if (!settings) {
       await sendMessage(chatId, "Ссылка недействительна или уже использована.");
@@ -67,8 +67,8 @@ async function handleStartToken(chatId: number, rawToken: string) {
     return;
   }
 
-  if (rawToken.startsWith("cust:")) {
-    const token = rawToken.slice("cust:".length);
+  if (rawToken.startsWith("cust_")) {
+    const token = rawToken.slice("cust_".length);
     const link = await prisma.phoneTelegramLink.findFirst({ where: { linkToken: token } });
     if (!link) {
       await sendMessage(chatId, "Ссылка недействительна или уже использована.");

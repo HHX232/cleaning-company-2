@@ -73,6 +73,8 @@ export default async function ServicePageRoute({ params }: PageProps) {
         featureTags={(page.featureTags as string[] | null) ?? []}
         showProcessSteps={page.showProcessSteps}
         showMidBanner={page.showMidBanner}
+        aboutText={page.aboutText}
+        includesText={page.includesText}
         teamMembers={teamMembers}
       />
       <Footer id="order" />

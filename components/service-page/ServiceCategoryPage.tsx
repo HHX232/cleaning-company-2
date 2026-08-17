@@ -7,6 +7,7 @@ import Faq from "@/components/landing/Faq";
 import ConsultationCta from "./ConsultationCta";
 import ProcessSteps from "./ProcessSteps";
 import MidPageCta from "./MidPageCta";
+import ServiceInfoBlocks from "./ServiceInfoBlocks";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import { howToOrder, seoText, serviceFaq, team } from "@/lib/serviceCategoryContent";
 import { teamPhotoDefaultFor } from "@/lib/teamPhotoDefaults";
@@ -48,6 +49,8 @@ type ServiceCategoryPageProps = {
   featureTags?: string[];
   showProcessSteps?: boolean;
   showMidBanner?: boolean;
+  aboutText?: string | null;
+  includesText?: string | null;
   teamMembers: TeamMember[];
 };
 
@@ -61,6 +64,8 @@ export default function ServiceCategoryPage({
   featureTags = [],
   showProcessSteps = false,
   showMidBanner = false,
+  aboutText,
+  includesText,
   teamMembers,
 }: ServiceCategoryPageProps) {
   const openContactModal = useContactModal();
@@ -119,6 +124,8 @@ export default function ServiceCategoryPage({
           </div>
         </section>
       </div>
+
+      <ServiceInfoBlocks title={title} aboutText={aboutText} includesText={includesText} />
 
       <section className="bg-surface px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
         <div className="mx-auto max-w-200">

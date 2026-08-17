@@ -55,11 +55,14 @@ export default function TopProgressBar() {
       if (isRealNavigation(anchor.href)) start();
     };
 
-    // Catch programmatic navigation (router.push/replace go through history).
+    // Catch programmatic navigation (router.push goes through history) —
+    // but next/link's client router calls pushState even for a same-page
+    // hash change, so this needs the same real-navigation check as clicks.
     const origPush = history.pushState;
     const origReplace = history.replaceState;
     history.pushState = function (...args) {
-      start();
+      const url = args[2];
+      if (url && isRealNavigation(String(url))) start();
       return origPush.apply(this, args);
     };
     history.replaceState = function (...args) {

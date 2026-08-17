@@ -30,5 +30,8 @@ export async function generateCustomerTelegramLinkToken(
     create: { phone: trimmed, linkToken: token },
   });
 
-  return { ok: true, url: `https://t.me/${username}?start=cust:${token}` };
+  // Telegram's deep-link start payload only allows [A-Za-z0-9_-] — a colon
+  // (as in "cust:token") gets silently dropped, so the bot opens with no
+  // payload at all. Underscore is the safe separator.
+  return { ok: true, url: `https://t.me/${username}?start=cust_${token}` };
 }

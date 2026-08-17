@@ -26,6 +26,12 @@ model ServicePage {
   featureTags             Json     @default("[]")
   showProcessSteps        Boolean  @default(false)
   showMidBanner           Boolean  @default(false)
+  // "Что такое / что входит" double info block (components/service-page/ServiceInfoBlocks.tsx).
+  // Both optional — the block hides itself until an admin fills them in.
+  // aboutText is a plain paragraph; includesText is one checklist line per
+  // newline, same convention as featureTags above.
+  aboutText               String?
+  includesText            String?
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
 }

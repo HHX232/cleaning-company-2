@@ -2,6 +2,14 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 
+// Fallback in case ADMIN_EMAIL/ADMIN_PASSWORD_HASH are missing or
+// misconfigured in the deploy environment (this happened once already —
+// Next.js's $-expansion in .env files silently corrupted the hash). The
+// fallback is the same bcrypt hash as .env, never the plaintext password,
+// so it stays safe to commit.
+const FALLBACK_ADMIN_EMAIL = "speckliningbel@yandex.by";
+const FALLBACK_ADMIN_PASSWORD_HASH = "$2b$10$MOPQRYsXtmrWwnxirpYWd.HLT4HqW42ephY7l3mWr7K/pGAZfVR3m";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   session: { strategy: "jwt" },
@@ -12,6 +20,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
+      // Single hardcoded admin — no accounts/DB. Credentials live in env
+      // (ADMIN_PASSWORD_HASH is a bcrypt hash, never the plaintext), with a
+      // baked-in fallback if env is missing/broken (see FALLBACK_* above).
       async authorize(credentials) {
         console.log('=== AUTHORIZE CALLED ===');
 
@@ -28,19 +39,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const adminEmail = process.env.ADMIN_EMAIL;
-        const adminHash = process.env.ADMIN_PASSWORD_HASH;
+        const adminEmail = process.env.ADMIN_EMAIL || FALLBACK_ADMIN_EMAIL;
+        const adminHash = process.env.ADMIN_PASSWORD_HASH || FALLBACK_ADMIN_PASSWORD_HASH;
 
         console.log('Env check:', {
           adminEmail: adminEmail,
-          adminHashExists: !!adminHash,
-          adminHashLength: adminHash?.length || 0
+          usingEnvHash: !!process.env.ADMIN_PASSWORD_HASH,
+          adminHashLength: adminHash.length
         });
-
-        if (!adminEmail || !adminHash) {
-          console.log('Missing env vars');
-          return null;
-        }
 
         if (email !== adminEmail) {
           console.log('Email mismatch:', {

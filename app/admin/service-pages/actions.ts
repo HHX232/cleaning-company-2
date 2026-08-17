@@ -36,6 +36,8 @@ function readFields(formData: FormData) {
     showFeaturesBlock: formData.get("showFeaturesBlock") === "on",
     showProcessSteps: formData.get("showProcessSteps") === "on",
     showMidBanner: formData.get("showMidBanner") === "on",
+    aboutText: String(formData.get("aboutText") ?? "").trim(),
+    includesText: String(formData.get("includesText") ?? "").trim(),
   };
 }
 
@@ -60,6 +62,8 @@ export async function createServicePage(formData: FormData) {
       showFeaturesBlock: fields.showFeaturesBlock,
       showProcessSteps: fields.showProcessSteps,
       showMidBanner: fields.showMidBanner,
+      aboutText: fields.aboutText || null,
+      includesText: fields.includesText || null,
     },
   });
 
@@ -83,6 +87,8 @@ export async function updateServicePage(id: string, formData: FormData) {
       showFeaturesBlock: fields.showFeaturesBlock,
       showProcessSteps: fields.showProcessSteps,
       showMidBanner: fields.showMidBanner,
+      aboutText: fields.aboutText || null,
+      includesText: fields.includesText || null,
     },
   });
 

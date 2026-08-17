@@ -27,7 +27,10 @@ export async function generateTelegramLinkToken(): Promise<{ ok: true; url: stri
     create: { id: "admin", telegramLinkToken: token },
   });
 
-  return { ok: true, url: `https://t.me/${username}?start=admin:${token}` };
+  // Telegram's deep-link start payload only allows [A-Za-z0-9_-] — a colon
+  // (as in "admin:token") gets silently dropped, so the bot opens with no
+  // payload at all. Underscore is the safe separator.
+  return { ok: true, url: `https://t.me/${username}?start=admin_${token}` };
 }
 
 export async function disconnectTelegram(): Promise<void> {

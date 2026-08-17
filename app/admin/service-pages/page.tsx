@@ -65,6 +65,16 @@ export default async function AdminServicePagesPage() {
                   Теги «Справимся с задачами» (по одному на строку)
                   <textarea name="featureTags" defaultValue={tags} rows={4} className={inputClass} />
                 </label>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <label className={labelClass}>
+                    {`Блок «Что такое ${p.title.charAt(0).toLowerCase()}${p.title.slice(1)}?» — текст`}
+                    <textarea name="aboutText" defaultValue={p.aboutText ?? ""} rows={4} className={inputClass} />
+                  </label>
+                  <label className={labelClass}>
+                    {`Блок «Что входит в услугу «${p.title}»?» — по пункту на строку`}
+                    <textarea name="includesText" defaultValue={p.includesText ?? ""} rows={4} className={inputClass} />
+                  </label>
+                </div>
                 <div className="flex flex-wrap gap-4">
                   <label className={checkClass}>
                     <input type="checkbox" name="showFeaturesBlock" defaultChecked={p.showFeaturesBlock} className="accent-primary" />
@@ -147,6 +157,16 @@ export default async function AdminServicePagesPage() {
             Теги «Справимся с задачами» (по одному на строку)
             <textarea name="featureTags" rows={4} className={inputClass} />
           </label>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <label className={labelClass}>
+              Блок «Что такое...?» — текст (необязательно)
+              <textarea name="aboutText" rows={4} className={inputClass} />
+            </label>
+            <label className={labelClass}>
+              Блок «Что входит...?» — по пункту на строку (необязательно)
+              <textarea name="includesText" rows={4} className={inputClass} />
+            </label>
+          </div>
           <div className="flex flex-wrap gap-4">
             <label className={checkClass}>
               <input type="checkbox" name="showFeaturesBlock" defaultChecked className="accent-primary" />
