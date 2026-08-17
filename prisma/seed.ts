@@ -224,7 +224,15 @@ async function main() {
 
   if ((await prisma.galleryItem.count()) === 0) {
     for (const item of galleryItems) {
-      await prisma.galleryItem.create({ data: { title: item.title, meta: item.meta, order: item.order } });
+      await prisma.galleryItem.create({
+        data: {
+          title: item.title,
+          meta: item.meta,
+          order: item.order,
+          beforeUrl: item.beforeUrl,
+          afterUrl: item.afterUrl,
+        },
+      });
     }
     console.log(`Seeded ${galleryItems.length} gallery items.`);
   }

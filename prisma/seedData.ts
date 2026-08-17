@@ -1396,21 +1396,47 @@ export const serviceBlocks = [
 
 export const galleryItems = [
   {
-    "title": "Уборка кухни в запущенной квартире",
+    "title": "Очистка металлических изделий",
     "meta": [
-      "⏱ Сроки: 2 часа",
-      "↔ Площадь: 14 м2",
-      "🏷 Тип: генеральная уборка"
+      "⏱ Сроки: 15 минут",
+      "🔩 Материал: металл",
+      "🏷 Тип: точечная уборка"
     ],
-    "order": 0
+    "order": 0,
+    "beforeUrl": "/images/portfolio/metal-before.webp",
+    "afterUrl": "/images/portfolio/metal-after.webp"
   },
   {
-    "title": "Очистка бассейна",
+    "title": "Уборка помещения после потопа",
+    "meta": [
+      "⏱ Сроки: 4 часа",
+      "↔ Площадь: 40 м2",
+      "🏷 Тип: Спецуборка"
+    ],
+    "order": 1,
+    "beforeUrl": "/images/portfolio/flood-before.webp",
+    "afterUrl": "/images/portfolio/flood-after.webp"
+  },
+  {
+    "title": "Уборка после смерти человека",
     "meta": [
       "⏱ Сроки: 9 часов",
-      "↔ Площадь: 32 м2",
-      "🏷 Тип: спецуборка"
+      "↔ Площадь: 10 м2",
+      "🏷 Тип: Спецуборка"
     ],
-    "order": 1
+    "order": 2,
+    "beforeUrl": "/images/portfolio/death-before.webp",
+    "afterUrl": "/images/portfolio/death-after.webp"
+  },
+  {
+    "title": "Очистка тротуарной плитки от грязи и мха",
+    "meta": [
+      "⏱ Сроки: 1 день",
+      "↔ Площадь: 32 м2",
+      "🏷 Тип: тротуарная плитка"
+    ],
+    "order": 3,
+    "beforeUrl": "/images/portfolio/tile-before.webp",
+    "afterUrl": "/images/portfolio/tile-after.webp"
   }
 ];
