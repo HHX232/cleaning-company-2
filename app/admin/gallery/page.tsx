@@ -13,7 +13,9 @@ export default async function AdminGalleryPage() {
     <div className="mx-auto max-w-200">
       <h1 className="mb-1 text-xl font-extrabold text-ink">Примеры работ</h1>
       <p className="mb-6 text-sm text-muted">
-        Блоки «до/после» в разделе «Примеры работ» на главной. Можно добавлять и удалять блоки — на странице они
+        Блоки «до/после» в разделе «Примеры работ» — показываются на главной и на всех страницах услуг. Категория
+        «Мойка окон» видна только на страницах услуг мойки окон; категория «Общее» — на главной и на всех остальных
+        страницах услуг (страницы мойки окон её не показывают). Можно добавлять и удалять блоки — на странице они
         автоматически перестраиваются в 1 колонку на телефоне и 2 на десктопе. «Подписи» — по одной на строку.
         «Порядок» — сортировка (меньше — выше).
       </p>
@@ -25,10 +27,17 @@ export default async function AdminGalleryPage() {
           return (
             <div key={item.id} className="rounded-xl border border-border bg-surface p-4">
               <AdminForm action={updateGalleryItem.bind(null, item.id)} className="mb-3 flex flex-col gap-3">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_90px]">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_120px_90px]">
                   <label className={labelClass}>
                     Заголовок
                     <input type="text" name="title" defaultValue={item.title} required className={inputClass} />
+                  </label>
+                  <label className={labelClass}>
+                    Категория
+                    <select name="category" defaultValue={item.category} className={inputClass}>
+                      <option value="general">Общее</option>
+                      <option value="windows">Мойка окон</option>
+                    </select>
                   </label>
                   <label className={labelClass}>
                     Порядок
@@ -81,10 +90,17 @@ export default async function AdminGalleryPage() {
       <details className="rounded-lg border border-border bg-surface p-3">
         <summary className="cursor-pointer text-xs font-bold text-ink">+ Новый блок</summary>
         <AdminForm action={createGalleryItem} className="mt-3 flex flex-col gap-3">
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_90px]">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-[1fr_120px_90px]">
             <label className={labelClass}>
               Заголовок
               <input type="text" name="title" placeholder="Уборка кухни в запущенной квартире" required className={inputClass} />
+            </label>
+            <label className={labelClass}>
+              Категория
+              <select name="category" defaultValue="general" className={inputClass}>
+                <option value="general">Общее</option>
+                <option value="windows">Мойка окон</option>
+              </select>
             </label>
             <label className={labelClass}>
               Порядок

@@ -161,8 +161,11 @@ const reviews = [
 ];
 
 const whyUsPhotos = [
-  { key: "why-us-reason1", file: "reason1.webp", mimeType: "image/webp" },
-  { key: "why-us-reason2", file: "reason2.webp", mimeType: "image/webp" },
+  { key: "why-us-reason1", file: "posters/whyus-punctual.webp", mimeType: "image/webp" },
+  { key: "why-us-reason2", file: "services/com-industrial.webp", mimeType: "image/webp" },
+  { key: "why-us-reason3", file: "posters/whyus-trusted.webp", mimeType: "image/webp" },
+  { key: "why-us-reason4", file: "posters/whyus-specialized.webp", mimeType: "image/webp" },
+  { key: "why-us-reason5", file: "services/windows-office.webp", mimeType: "image/webp" },
 ];
 
 async function main() {
@@ -222,20 +225,19 @@ async function main() {
     console.log(`Seeded ${priceRows.length} price rows.`);
   }
 
-  if ((await prisma.galleryItem.count()) === 0) {
-    for (const item of galleryItems) {
-      await prisma.galleryItem.create({
-        data: {
-          title: item.title,
-          meta: item.meta,
-          order: item.order,
-          beforeUrl: item.beforeUrl,
-          afterUrl: item.afterUrl,
-        },
-      });
-    }
-    console.log(`Seeded ${galleryItems.length} gallery items.`);
-  }
+  // No natural unique key on gallery items — reseed is a clean replace.
+  await prisma.galleryItem.deleteMany();
+  await prisma.galleryItem.createMany({
+    data: galleryItems.map((item) => ({
+      title: item.title,
+      meta: item.meta,
+      category: item.category,
+      order: item.order,
+      beforeUrl: item.beforeUrl,
+      afterUrl: item.afterUrl,
+    })),
+  });
+  console.log(`Seeded ${galleryItems.length} gallery items.`);
 
   await prisma.aboutPage.upsert({
     where: { id: "about" },

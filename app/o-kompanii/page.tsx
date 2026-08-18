@@ -4,8 +4,11 @@ import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
 import OrderButton from "@/components/landing/OrderButton";
 import CountUp from "@/components/ui/CountUp";
+import { BadgeCheckIcon, ClockIcon, StarIcon, UsersIcon } from "@/components/ui/LineIcons";
 import { company } from "@/lib/content";
 import { getAboutContent } from "@/lib/aboutData";
+
+const statIcons = [ClockIcon, BadgeCheckIcon, UsersIcon, StarIcon];
 
 export const metadata: Metadata = {
   title: `О компании — ${company.name}`,
@@ -39,12 +42,23 @@ export default async function AboutCompanyPage() {
       {about.stats.length > 0 && (
         <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
           <div className="mx-auto grid max-w-260 grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
-            {about.stats.map((s) => (
-              <div key={s.label} className="rounded-2xl border border-border bg-surface p-5 text-center sm:p-6">
-                <CountUp value={s.value} className="text-2xl font-extrabold text-primary sm:text-[32px]" />
-                <div className="mt-1.5 text-xs leading-snug text-muted sm:text-[13px]">{s.label}</div>
-              </div>
-            ))}
+            {about.stats.map((s, i) => {
+              const Icon = statIcons[i % statIcons.length];
+              return (
+                <div
+                  key={s.label}
+                  className="flex items-center justify-center gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5"
+                >
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CountUp value={s.value} className="block text-xl font-extrabold text-primary sm:text-2xl" />
+                    <div className="mt-0.5 text-xs leading-snug text-muted sm:text-[13px]">{s.label}</div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

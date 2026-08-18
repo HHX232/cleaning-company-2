@@ -4,6 +4,10 @@ import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import ReadMore from "@/components/ui/ReadMore";
 import Faq from "@/components/landing/Faq";
+import Reviews, { type ReviewItem } from "@/components/landing/Reviews";
+import Gallery from "@/components/landing/Gallery";
+import CalculatorDetailed from "@/components/landing/CalculatorDetailed";
+import type { GalleryItemDto } from "@/lib/galleryData";
 import ConsultationCta from "./ConsultationCta";
 import ProcessSteps from "./ProcessSteps";
 import MidPageCta from "./MidPageCta";
@@ -11,6 +15,7 @@ import ServiceInfoBlocks from "./ServiceInfoBlocks";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import { howToOrder, seoText, serviceFaq, team } from "@/lib/serviceCategoryContent";
 import { teamPhotoDefaultFor } from "@/lib/teamPhotoDefaults";
+import type { CalculatorOptionsByField } from "@/lib/calculator";
 
 // Small pool of eyebrow slogans so the hero doesn't read identically on every
 // service page. Picked deterministically from the title so a given page always
@@ -52,6 +57,9 @@ type ServiceCategoryPageProps = {
   aboutText?: string | null;
   includesText?: string | null;
   teamMembers: TeamMember[];
+  calculatorOptions: CalculatorOptionsByField;
+  reviews: ReviewItem[];
+  galleryItems: GalleryItemDto[];
 };
 
 export default function ServiceCategoryPage({
@@ -67,6 +75,9 @@ export default function ServiceCategoryPage({
   aboutText,
   includesText,
   teamMembers,
+  calculatorOptions,
+  reviews,
+  galleryItems,
 }: ServiceCategoryPageProps) {
   const openContactModal = useContactModal();
 
@@ -165,6 +176,8 @@ export default function ServiceCategoryPage({
 
       <Faq title="Вопросы и ответы" items={serviceFaq} defaultOpenIndex={0} />
 
+      <Reviews reviews={reviews} />
+
       <section className="px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-14 lg:px-10">
         <div className="mx-auto max-w-200 text-sm leading-relaxed text-muted sm:text-[15px]">
           <ReadMore>
@@ -177,7 +190,11 @@ export default function ServiceCategoryPage({
         </div>
       </section>
 
+      <Gallery title="Примеры работ" items={galleryItems} />
+
       <ConsultationCta imageUrl={consultationImageUrl} />
+
+      <CalculatorDetailed options={calculatorOptions} />
     </div>
   );
 }

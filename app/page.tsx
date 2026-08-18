@@ -2,7 +2,9 @@ import { unstable_cache } from "next/cache";
 import Header from "@/components/landing/Header";
 import Nav from "@/components/landing/Nav";
 import Hero from "@/components/landing/Hero";
+import HowItWorks from "@/components/landing/HowItWorks";
 import WhyUs from "@/components/landing/WhyUs";
+import ServiceGuarantees from "@/components/landing/ServiceGuarantees";
 import Promotions from "@/components/landing/Promotions";
 import ServicesDetail from "@/components/landing/ServicesDetail";
 import Pricing from "@/components/landing/Pricing";
@@ -14,7 +16,7 @@ import Specialists from "@/components/landing/Specialists";
 import Reviews from "@/components/landing/Reviews";
 import Footer from "@/components/landing/Footer";
 import { faq } from "@/lib/content";
-import { getGalleryItems } from "@/lib/galleryData";
+import { getGalleryItems, filterGalleryItems } from "@/lib/galleryData";
 import { homeImageSlots } from "@/lib/homeImageSlots";
 import { homeImageDefaults } from "@/lib/homeImageDefaults";
 import { imageUrl } from "@/lib/imageStorage";
@@ -108,12 +110,22 @@ export default async function Home() {
       <Header />
       <Nav />
       <Hero imageSrc={src("hero-home")} />
-      <WhyUs reason1Src={src("why-us-reason1")} reason2Src={src("why-us-reason2")} />
+      <HowItWorks />
+      <WhyUs
+        slideSrcs={[
+          src("why-us-reason1"),
+          src("why-us-reason2"),
+          src("why-us-reason3"),
+          src("why-us-reason4"),
+          src("why-us-reason5"),
+        ]}
+      />
       <Promotions promos={promos} />
       <ServicesDetail bigServices={bigServices} smallServices={smallServices} imageSrcBySlot={servicesImageSrcBySlot} />
       <Pricing priceData={priceData} />
       <CalculatorDetailed options={calculatorOptions} />
-      <Gallery title="Примеры работ" items={galleryItems} />
+      <Gallery title="Примеры работ" items={filterGalleryItems(galleryItems, false)} />
+      <ServiceGuarantees />
       <CtaBanner
         title="Специализированный-клининг – уборка любой сложности 24/7!"
         imageLabel="Фото: сотрудник компании"

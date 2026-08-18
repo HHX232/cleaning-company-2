@@ -21,9 +21,9 @@ export default function MidPageCta() {
       <div className="relative mx-auto max-w-300 overflow-hidden rounded-3xl bg-dark p-7 sm:p-11">
         <div className="pointer-events-none absolute top-[-60px] right-[-60px] h-55 w-55 rounded-full bg-primary opacity-[0.18]" />
 
-        <div className="relative mb-5 flex items-center gap-3 lg:hidden">
-          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full">
-            <ImagePlaceholder label={`Фото: ${staffBadge.name}`} />
+        <div className="relative mb-5 flex items-center gap-3">
+          <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full sm:h-16 sm:w-16">
+            <ImagePlaceholder label={`Фото: ${staffBadge.name}`} src={staffBadge.photoUrl} />
           </div>
           <div>
             <div className="text-sm font-bold text-white">{staffBadge.name}</div>

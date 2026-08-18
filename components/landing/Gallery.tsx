@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import BeforeAfterSlider from "@/components/ui/BeforeAfterSlider";
 import type { GalleryItemDto } from "@/lib/galleryData";
 
@@ -6,14 +9,30 @@ type GalleryProps = {
   items: GalleryItemDto[];
 };
 
+const DESKTOP_INITIAL = 6;
+const MOBILE_INITIAL = 4;
+
 export default function Gallery({ title, items }: GalleryProps) {
+  const [initialCount, setInitialCount] = useState(DESKTOP_INITIAL);
+  const [expanded, setExpanded] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const apply = () => setInitialCount(mq.matches ? MOBILE_INITIAL : DESKTOP_INITIAL);
+    apply();
+    mq.addEventListener("change", apply);
+    return () => mq.removeEventListener("change", apply);
+  }, []);
+
   if (items.length === 0) return null;
+
+  const shown = expanded ? items : items.slice(0, initialCount);
 
   return (
     <section className="bg-surface px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
       <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">{title}</h2>
-      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 [&>*:last-child:nth-child(odd)]:md:col-span-2">
-        {items.map((g) => (
+      <div className="mx-auto grid max-w-300 grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
+        {shown.map((g) => (
           <div key={g.id} className="overflow-hidden rounded-2xl border border-border bg-bg">
             <div className="px-5 pt-4">
               <h3 className="mb-2 text-lg font-bold text-primary">{g.title}</h3>
@@ -28,11 +47,22 @@ export default function Gallery({ title, items }: GalleryProps) {
               afterLabel={`Фото «после»: ${g.title}`}
               beforeSrc={g.beforeUrl ?? undefined}
               afterSrc={g.afterUrl ?? undefined}
-              className="mx-5 my-4 h-48 rounded-xl sm:h-55"
+              className="mx-5 my-4 h-48 rounded-xl sm:h-65"
             />
           </div>
         ))}
       </div>
+      {!expanded && items.length > initialCount && (
+        <div className="mt-8 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setExpanded(true)}
+            className="rounded-[10px] border border-border bg-bg px-7 py-3 text-sm font-bold text-ink transition-colors duration-150 hover:border-primary hover:text-primary"
+          >
+            Показать ещё
+          </button>
+        </div>
+      )}
     </section>
   );
 }

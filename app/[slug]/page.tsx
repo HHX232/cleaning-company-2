@@ -7,6 +7,8 @@ import Footer from "@/components/landing/Footer";
 import ServiceCategoryPage from "@/components/service-page/ServiceCategoryPage";
 import { servicePageHeroDefault, servicePageConsultationDefault } from "@/lib/homeImageDefaults";
 import { prisma } from "@/lib/prisma";
+import { getCalculatorOptions } from "@/lib/calculatorOptionsData";
+import { getGalleryItems, filterGalleryItems } from "@/lib/galleryData";
 
 // ISR: known slugs are built statically below and served from cache, then
 // silently re-fetched from the DB at most once every 10 minutes. A slug that
@@ -37,6 +39,12 @@ const getTeamMembers = unstable_cache(
   { revalidate: 600 },
 );
 
+const getReviews = unstable_cache(
+  async () => prisma.review.findMany({ orderBy: { order: "asc" } }),
+  ["service-page-reviews"],
+  { revalidate: 600 },
+);
+
 export async function generateStaticParams() {
   const pages = await prisma.servicePage.findMany({ select: { slug: true } });
   return pages.map((p) => ({ slug: p.slug }));
@@ -55,9 +63,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ServicePageRoute({ params }: PageProps) {
   const { slug } = await params;
-  const [page, teamMembers] = await Promise.all([getServicePage(slug), getTeamMembers()]);
+  const [page, teamMembers, calculatorOptions, reviews, galleryItems] = await Promise.all([
+    getServicePage(slug),
+    getTeamMembers(),
+    getCalculatorOptions(),
+    getReviews(),
+    getGalleryItems(),
+  ]);
 
   if (!page) notFound();
+
+  const isWindowsPage = page.breadcrumbCategoryLabel === "Мойка окон";
 
   return (
     <div className="min-h-screen bg-bg text-ink">
@@ -76,6 +92,9 @@ export default async function ServicePageRoute({ params }: PageProps) {
         aboutText={page.aboutText}
         includesText={page.includesText}
         teamMembers={teamMembers}
+        calculatorOptions={calculatorOptions}
+        reviews={reviews}
+        galleryItems={filterGalleryItems(galleryItems, isWindowsPage)}
       />
       <Footer id="order" />
     </div>

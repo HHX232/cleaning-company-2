@@ -18,14 +18,19 @@ function parseMeta(raw: string): string[] {
     .filter(Boolean);
 }
 
+function parseCategory(raw: string): string {
+  return raw === "windows" ? "windows" : "general";
+}
+
 export async function createGalleryItem(formData: FormData) {
   await requireAdmin();
   const title = String(formData.get("title") ?? "").trim();
   const meta = parseMeta(String(formData.get("meta") ?? ""));
+  const category = parseCategory(String(formData.get("category") ?? ""));
   const order = Number(formData.get("order") ?? 0);
   if (!title) return;
 
-  await prisma.galleryItem.create({ data: { title, meta, order } });
+  await prisma.galleryItem.create({ data: { title, meta, category, order } });
   revalidatePath("/admin/gallery");
   revalidatePath("/");
 }
@@ -34,10 +39,11 @@ export async function updateGalleryItem(id: string, formData: FormData) {
   await requireAdmin();
   const title = String(formData.get("title") ?? "").trim();
   const meta = parseMeta(String(formData.get("meta") ?? ""));
+  const category = parseCategory(String(formData.get("category") ?? ""));
   const order = Number(formData.get("order") ?? 0);
   if (!title) return;
 
-  await prisma.galleryItem.update({ where: { id }, data: { title, meta, order } });
+  await prisma.galleryItem.update({ where: { id }, data: { title, meta, category, order } });
   revalidatePath("/admin/gallery");
   revalidatePath("/");
 }

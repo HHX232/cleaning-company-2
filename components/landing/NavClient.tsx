@@ -199,6 +199,7 @@ export default function NavClient({ serviceBlocks }: { serviceBlocks: ServiceBlo
         { label: "Наши гарантии", href: "/nashi-garantii" },
       ],
     },
+    { label: "Цены", href: "/#prices" },
     { label: "Контакты", href: "/contacts" },
   ];
 

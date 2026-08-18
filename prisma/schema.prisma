@@ -175,14 +175,18 @@ model Review {
   updatedAt DateTime @updatedAt
 }
 
-// Homepage "Примеры работ" before/after blocks (components/landing/Gallery.tsx).
-// Admin adds/removes blocks; before/after photos are uploaded to S3 and their
-// URLs stored here (same pattern as ServicePage images). meta is a JSON string
-// array of small chips ("⏱ Сроки: 2 часа", ...).
+// "Примеры работ" before/after blocks (components/landing/Gallery.tsx), shown
+// on the homepage and every service page. Admin adds/removes blocks;
+// before/after photos are uploaded to S3 and their URLs stored here (same
+// pattern as ServicePage images). meta is a JSON string array of small chips
+// ("⏱ Сроки: 2 часа", ...). category picks which pages a block appears on:
+// "windows" blocks show only on "Мойка окон" service pages, "general" blocks
+// show everywhere else (including the homepage).
 model GalleryItem {
   id        String   @id @default(cuid())
   title     String
   meta      Json
+  category  String   @default("general")
   beforeUrl String?
   afterUrl  String?
   order     Int      @default(0)
