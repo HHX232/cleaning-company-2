@@ -92,7 +92,7 @@ export default function ServiceCategoryPage({
           <ImagePlaceholder
             label="Фото: клинер за работой"
             src={heroImageUrl ?? undefined}
-            className="absolute inset-0"
+            className="absolute inset-0 object-[65%_center] sm:object-center"
             priority
           />
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(21,35,24,0.94)_0%,rgba(21,35,24,0.8)_45%,rgba(21,35,24,0.45)_100%)]" />
@@ -174,10 +174,6 @@ export default function ServiceCategoryPage({
         </div>
       </section>
 
-      <Faq title="Вопросы и ответы" items={serviceFaq} defaultOpenIndex={0} />
-
-      <Reviews reviews={reviews} />
-
       <section className="px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-14 lg:px-10">
         <div className="mx-auto max-w-200 text-sm leading-relaxed text-muted sm:text-[15px]">
           <ReadMore>
@@ -195,6 +191,10 @@ export default function ServiceCategoryPage({
       <ConsultationCta imageUrl={consultationImageUrl} />
 
       <CalculatorDetailed options={calculatorOptions} />
+
+      <Reviews reviews={reviews} />
+
+      <Faq title="Вопросы и ответы" items={serviceFaq} defaultOpenIndex={0} />
     </div>
   );
 }

@@ -123,7 +123,6 @@ export default async function Home() {
       <Promotions promos={promos} />
       <ServicesDetail bigServices={bigServices} smallServices={smallServices} imageSrcBySlot={servicesImageSrcBySlot} />
       <Pricing priceData={priceData} />
-      <CalculatorDetailed options={calculatorOptions} />
       <Gallery title="Примеры работ" items={filterGalleryItems(galleryItems, false)} />
       <ServiceGuarantees />
       <CtaBanner
@@ -146,9 +145,10 @@ export default async function Home() {
           проблему!
         </p>
       </CtaBanner>
-      <Faq title="Вопросы и ответы" items={faq} defaultOpenIndex={1} />
       <Specialists members={teamMembers} />
+      <CalculatorDetailed options={calculatorOptions} />
       <Reviews reviews={reviews} />
+      <Faq title="Вопросы и ответы" items={faq} defaultOpenIndex={1} />
       <Footer id="order" />
     </div>
   );

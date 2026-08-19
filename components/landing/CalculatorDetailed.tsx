@@ -21,7 +21,7 @@ import { Pill, EmptyGroupNotice } from "./CalculatorPill";
 export default function CalculatorDetailed({ options }: { options: CalculatorOptionsByField }) {
   const [rooms, setRooms] = useState("2");
   const [calc, setCalc] = useState<Calc2State>({
-    severity: 5,
+    area: 25,
     objectType: options.OBJECT_TYPE[0]?.key ?? "",
     dirt: options.DIRT[0]?.key ?? "",
     buildingType: options.BUILDING_TYPE[0]?.key ?? "",
@@ -84,16 +84,16 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
 
           <div>
             <div className="mb-2.5 flex justify-between text-sm font-bold text-ink">
-              <span>Тяжесть загрязнения</span>
-              <span>{calc.severity} / 10</span>
+              <span>Площадь, м²</span>
+              <span>{calc.area >= 50 ? "50+" : calc.area} м²</span>
             </div>
             <input
               type="range"
               min={1}
-              max={10}
+              max={50}
               step={1}
-              value={calc.severity}
-              onChange={(e) => setCalc((s) => ({ ...s, severity: Number(e.target.value) }))}
+              value={calc.area}
+              onChange={(e) => setCalc((s) => ({ ...s, area: Number(e.target.value) }))}
               className="w-full accent-primary"
             />
           </div>

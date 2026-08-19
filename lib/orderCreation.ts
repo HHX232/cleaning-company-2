@@ -49,7 +49,7 @@ export async function createOrderFromCalculator(
   const { price } = computeCalc2(calc, coefficients);
 
   const parts = [
-    `Тяжесть загрязнения: ${calc.severity}/10`,
+    `Площадь: ${calc.area >= 50 ? "50+" : calc.area} м²`,
     `Состояние: ${labelFor(options.DIRT, calc.dirt)}`,
     `Тип здания: ${labelFor(options.BUILDING_TYPE, calc.buildingType)}`,
   ];

@@ -3,7 +3,7 @@
 // CalculatorOption table (see lib/calculatorOptionsData.ts) — the set of
 // valid keys isn't knowable at compile time anymore.
 export type Calc2State = {
-  severity: number;
+  area: number;
   objectType: string;
   dirt: string;
   buildingType: string;
@@ -93,7 +93,10 @@ export function toDateInputString(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-const BASE_PER_SEVERITY_POINT = 40;
+// Scaled down from the old 1-10 "severity" scale's 40-per-point (÷5, matching
+// the 1-50 "area" scale being 5x wider) so a mid-range input still prices out
+// to roughly the same amount as before.
+const BASE_PER_SQM = 8;
 
 export function computeCalc2(state: Calc2State, coef: CalculatorCoefficients) {
   // Extras (multi-select): fixed ones add rubles, multiplier ones multiply.
@@ -107,10 +110,10 @@ export function computeCalc2(state: Calc2State, coef: CalculatorCoefficients) {
     else extrasMultiplier *= m.value;
   }
 
-  const severityFactor = mult(coef.dirt, state.dirt) * mult(coef.objectType, state.objectType);
+  const conditionFactor = mult(coef.dirt, state.dirt) * mult(coef.objectType, state.objectType);
 
   let raw =
-    (BASE_PER_SEVERITY_POINT * state.severity * severityFactor * mult(coef.region, state.region) + extrasFixedSum) *
+    (BASE_PER_SQM * state.area * conditionFactor * mult(coef.region, state.region) + extrasFixedSum) *
     mult(coef.buildingType, state.buildingType) *
     mult(coef.urgency, state.urgency) *
     extrasMultiplier;
@@ -126,6 +129,6 @@ export function computeCalc2(state: Calc2State, coef: CalculatorCoefficients) {
 
   const price = Math.max(150, Math.round(raw));
   // Staff is a time divider; a fixed-price staff option divides by 1 (mult()).
-  const time = Math.max(1, Math.round(((state.severity / 2) * severityFactor) / mult(coef.staff, state.staff)));
+  const time = Math.max(1, Math.round(((state.area / 10) * conditionFactor) / mult(coef.staff, state.staff)));
   return { price, time };
 }
