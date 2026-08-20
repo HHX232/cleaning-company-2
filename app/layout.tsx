@@ -65,6 +65,20 @@ export default function RootLayout({
         </ContactModalProvider>
         <Toaster position="top-right" />
 
+        {/* Google Analytics (GA4) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-1JPK1TDQ4Z"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-1JPK1TDQ4Z');
+          `}
+        </Script>
+
         {/* Tawk.to live chat. onLoad hides the default floating launcher —
             it's opened instead from FloatingContact's "Написать в чат"
             button via window.Tawk_API, so there's only one chat bubble. */}
