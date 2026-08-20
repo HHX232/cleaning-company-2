@@ -85,12 +85,12 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
           <div>
             <div className="mb-2.5 flex justify-between text-sm font-bold text-ink">
               <span>Площадь, м²</span>
-              <span>{calc.area >= 50 ? "50+" : calc.area} м²</span>
+              <span>{calc.area >= 150 ? "150+" : calc.area} м²</span>
             </div>
             <input
               type="range"
               min={1}
-              max={50}
+              max={150}
               step={1}
               value={calc.area}
               onChange={(e) => setCalc((s) => ({ ...s, area: Number(e.target.value) }))}
@@ -261,7 +261,7 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
             Рассчитать точную стоимость
           </button>
           <span className="text-[11px] leading-snug text-[#8a8a8a]">
-            Итоговую сумму подтвердит менеджер после уточнения деталей
+            Ориентировочная цена — менеджер подтвердит итоговую сумму после уточнения деталей
           </span>
         </div>
       </div>
