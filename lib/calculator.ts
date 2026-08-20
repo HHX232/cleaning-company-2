@@ -22,6 +22,7 @@ export type Calc2State = {
 export type CalculatorOptionRow = { key: string; label: string; value: number; isFixed: boolean };
 
 export type CalculatorOptionsByField = {
+  AREA: CalculatorOptionRow[];
   OBJECT_TYPE: CalculatorOptionRow[];
   DIRT: CalculatorOptionRow[];
   BUILDING_TYPE: CalculatorOptionRow[];
@@ -37,6 +38,9 @@ export type OptionMeta = { value: number; isFixed: boolean };
 type MetaRecord = Record<string, OptionMeta>;
 
 export type CalculatorCoefficients = {
+  // Admin-editable ruble price per m² (sum of the AREA group's option
+  // values). Defaults to 0 when no AREA option has been configured yet.
+  areaPerSqm: number;
   objectType: MetaRecord;
   dirt: MetaRecord;
   buildingType: MetaRecord;
@@ -50,6 +54,7 @@ export function coefficientsFrom(options: CalculatorOptionsByField): CalculatorC
   const toRecord = (rows: CalculatorOptionRow[]): MetaRecord =>
     Object.fromEntries(rows.map((r) => [r.key, { value: r.value, isFixed: r.isFixed }]));
   return {
+    areaPerSqm: options.AREA.reduce((sum, r) => sum + r.value, 0),
     objectType: toRecord(options.OBJECT_TYPE),
     dirt: toRecord(options.DIRT),
     buildingType: toRecord(options.BUILDING_TYPE),
@@ -93,11 +98,6 @@ export function toDateInputString(date: Date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
-// Scaled down from the old 1-10 "severity" scale's 40-per-point (÷5, matching
-// the 1-50 "area" scale being 5x wider) so a mid-range input still prices out
-// to roughly the same amount as before.
-const BASE_PER_SQM = 8;
-
 export function computeCalc2(state: Calc2State, coef: CalculatorCoefficients) {
   // Extras (multi-select): fixed ones add rubles, multiplier ones multiply.
   let extrasFixedSum = 0;
@@ -113,7 +113,7 @@ export function computeCalc2(state: Calc2State, coef: CalculatorCoefficients) {
   const conditionFactor = mult(coef.dirt, state.dirt) * mult(coef.objectType, state.objectType);
 
   let raw =
-    (BASE_PER_SQM * state.area * conditionFactor * mult(coef.region, state.region) + extrasFixedSum) *
+    (coef.areaPerSqm * state.area * conditionFactor * mult(coef.region, state.region) + extrasFixedSum) *
     mult(coef.buildingType, state.buildingType) *
     mult(coef.urgency, state.urgency) *
     extrasMultiplier;

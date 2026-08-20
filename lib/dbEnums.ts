@@ -19,6 +19,7 @@ export const SERVICE_BLOCK_SIZES = ["BIG", "SMALL"] as const;
 export type ServiceBlockSize = (typeof SERVICE_BLOCK_SIZES)[number];
 
 export const CALCULATOR_FIELDS = [
+  "AREA",
   "OBJECT_TYPE",
   "DIRT",
   "BUILDING_TYPE",

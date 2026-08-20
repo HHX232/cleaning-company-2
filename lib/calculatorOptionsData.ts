@@ -7,6 +7,7 @@ export const getCalculatorOptions = unstable_cache(
   async (): Promise<CalculatorOptionsByField> => {
     const rows = await prisma.calculatorOption.findMany({ orderBy: { order: "asc" } });
     const grouped: CalculatorOptionsByField = {
+      AREA: [],
       OBJECT_TYPE: [],
       DIRT: [],
       BUILDING_TYPE: [],

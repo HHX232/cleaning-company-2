@@ -4,6 +4,7 @@ import type { CalculatorField } from "@/lib/dbEnums";
 import { createOption, deleteOption, updateOption } from "./actions";
 
 const fieldMeta: Record<CalculatorField, { title: string; valueHint: string }> = {
+  AREA: { title: "Площадь", valueHint: "цена за 1 м², руб. (по умолчанию 0 — нет строк)" },
   OBJECT_TYPE: { title: "Тип объекта", valueHint: "множитель цены" },
   DIRT: { title: "Состояние помещения", valueHint: "множитель цены" },
   BUILDING_TYPE: { title: "Тип здания", valueHint: "множитель цены" },
@@ -14,6 +15,7 @@ const fieldMeta: Record<CalculatorField, { title: string; valueHint: string }> =
 };
 
 const fieldOrder: CalculatorField[] = [
+  "AREA",
   "OBJECT_TYPE",
   "DIRT",
   "BUILDING_TYPE",
