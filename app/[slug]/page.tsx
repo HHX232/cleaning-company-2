@@ -87,7 +87,6 @@ export default async function ServicePageRoute({ params }: PageProps) {
         breadcrumbCategory={{ label: page.breadcrumbCategoryLabel, href: page.breadcrumbCategoryHref }}
         showFeaturesBlock={page.showFeaturesBlock}
         featureTags={(page.featureTags as string[] | null) ?? []}
-        showProcessSteps={page.showProcessSteps}
         showMidBanner={page.showMidBanner}
         aboutText={page.aboutText}
         includesText={page.includesText}

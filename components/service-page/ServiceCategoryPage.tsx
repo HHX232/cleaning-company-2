@@ -12,6 +12,7 @@ import ConsultationCta from "./ConsultationCta";
 import ProcessSteps from "./ProcessSteps";
 import MidPageCta from "./MidPageCta";
 import ServiceInfoBlocks from "./ServiceInfoBlocks";
+import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import { howToOrder, seoText, serviceFaq, team } from "@/lib/serviceCategoryContent";
 import { teamPhotoDefaultFor } from "@/lib/teamPhotoDefaults";
@@ -52,7 +53,6 @@ type ServiceCategoryPageProps = {
   breadcrumbCategory: { label: string; href: string };
   showFeaturesBlock?: boolean;
   featureTags?: string[];
-  showProcessSteps?: boolean;
   showMidBanner?: boolean;
   aboutText?: string | null;
   includesText?: string | null;
@@ -70,7 +70,6 @@ export default function ServiceCategoryPage({
   breadcrumbCategory,
   showFeaturesBlock = true,
   featureTags = [],
-  showProcessSteps = false,
   showMidBanner = false,
   aboutText,
   includesText,
@@ -149,7 +148,7 @@ export default function ServiceCategoryPage({
         </div>
       </section>
 
-      {showProcessSteps && <ProcessSteps />}
+      <ProcessSteps />
       {showMidBanner && <MidPageCta />}
 
       <section className="px-4 pt-10 pb-6 sm:px-6 sm:pt-14 lg:px-10">
@@ -189,6 +188,8 @@ export default function ServiceCategoryPage({
       <Gallery title="Примеры работ" items={galleryItems} />
 
       <ConsultationCta imageUrl={consultationImageUrl} />
+
+      <WhyChooseUs />
 
       <CalculatorDetailed options={calculatorOptions} />
 

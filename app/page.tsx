@@ -13,6 +13,7 @@ import Gallery from "@/components/landing/Gallery";
 import CtaBanner from "@/components/landing/CtaBanner";
 import Faq from "@/components/landing/Faq";
 import Specialists from "@/components/landing/Specialists";
+import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import Reviews from "@/components/landing/Reviews";
 import Footer from "@/components/landing/Footer";
 import { faq } from "@/lib/content";
@@ -146,6 +147,7 @@ export default async function Home() {
         </p>
       </CtaBanner>
       <Specialists members={teamMembers} />
+      <WhyChooseUs />
       <CalculatorDetailed options={calculatorOptions} />
       <Reviews reviews={reviews} />
       <Faq title="Вопросы и ответы" items={faq} defaultOpenIndex={1} />

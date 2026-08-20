@@ -81,10 +81,6 @@ export default async function AdminServicePagesPage() {
                     Показывать блок тегов
                   </label>
                   <label className={checkClass}>
-                    <input type="checkbox" name="showProcessSteps" defaultChecked={p.showProcessSteps} className="accent-primary" />
-                    Показывать шаги «Как заказать»
-                  </label>
-                  <label className={checkClass}>
                     <input type="checkbox" name="showMidBanner" defaultChecked={p.showMidBanner} className="accent-primary" />
                     Показывать баннер посередине
                   </label>
@@ -171,10 +167,6 @@ export default async function AdminServicePagesPage() {
             <label className={checkClass}>
               <input type="checkbox" name="showFeaturesBlock" defaultChecked className="accent-primary" />
               Показывать блок тегов
-            </label>
-            <label className={checkClass}>
-              <input type="checkbox" name="showProcessSteps" defaultChecked className="accent-primary" />
-              Показывать шаги «Как заказать»
             </label>
             <label className={checkClass}>
               <input type="checkbox" name="showMidBanner" className="accent-primary" />
