@@ -27,8 +27,24 @@ export async function getImage(key: string): Promise<{ data: Buffer; mimeType: s
   }
 }
 
+// srvstorage.kz throws OperationAborted ("a conflicting conditional operation
+// is currently in progress") when a PUT races another op on the same key.
+// It's transient and the AWS SDK doesn't retry it on its own ($retryable is
+// undefined for this error), so retry it here with a short backoff.
+async function putObjectWithRetry(command: PutObjectCommand, attempts = 3) {
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await s3.send(command);
+    } catch (err) {
+      const isConflict = (err as { Code?: string }).Code === "OperationAborted";
+      if (!isConflict || attempt === attempts) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 300 * attempt));
+    }
+  }
+}
+
 export async function putImage(key: string, data: Buffer, mimeType: string) {
-  await s3.send(
+  await putObjectWithRetry(
     new PutObjectCommand({ Bucket: S3_BUCKET, Key: objectKey(key), Body: data, ContentType: mimeType }),
   );
   // Metadata row drives the ?v= cache-buster and the homepage lookup.

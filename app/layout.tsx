@@ -97,28 +97,6 @@ export default function RootLayout({
             <img src="https://mc.yandex.ru/watch/111799632" style={{ position: "absolute", left: "-9999px" }} alt="" />
           </div>
         </noscript>
-
-        {/* Tawk.to live chat. onLoad hides the default floating launcher —
-            it's opened instead from FloatingContact's "Написать в чат"
-            button via window.Tawk_API, so there's only one chat bubble. */}
-        <Script id="tawk-to" strategy="afterInteractive">
-          {`
-            var Tawk_API = Tawk_API || {};
-            var Tawk_LoadStart = new Date();
-            Tawk_API.onLoad = function () {
-              Tawk_API.hideWidget();
-            };
-            (function () {
-              var s1 = document.createElement("script"),
-                s0 = document.getElementsByTagName("script")[0];
-              s1.async = true;
-              s1.src = "https://embed.tawk.to/6a7f4aae8e924d1d4dd1b320/1k00jnf28";
-              s1.charset = "UTF-8";
-              s1.setAttribute("crossorigin", "*");
-              s0.parentNode.insertBefore(s1, s0);
-            })();
-          `}
-        </Script>
       </body>
     </html>
   );

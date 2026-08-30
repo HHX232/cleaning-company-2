@@ -4,27 +4,6 @@ import { useState } from "react";
 import { contactLinks } from "@/lib/content";
 import { TelegramIcon, ViberIcon, WhatsAppIcon } from "@/components/ui/MessengerIcons";
 
-declare global {
-  interface Window {
-    Tawk_API?: { showWidget?: () => void; maximize?: () => void };
-  }
-}
-
-function openTawkChat() {
-  const api = window.Tawk_API;
-  if (!api) return;
-  api.showWidget?.();
-  api.maximize?.();
-}
-
-function ChatIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
-      <path d="M4 4h16a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H9l-4 4v-4H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" />
-    </svg>
-  );
-}
-
 const messengerItems = [
   { key: "whatsapp", label: "WhatsApp", href: contactLinks.whatsapp, icon: <WhatsAppIcon className="h-7 w-7" /> },
   { key: "viber", label: "Viber", href: contactLinks.viber, icon: <ViberIcon className="h-7 w-7" /> },
@@ -36,29 +15,11 @@ export default function FloatingContact() {
 
   const itemLabelClass =
     "rounded-full bg-black/80 px-4 py-2 text-sm font-semibold whitespace-nowrap text-white shadow-lg";
-  const itemIconClass =
-    "flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-white shadow-lg transition-transform duration-150 hover:scale-105";
   const messengerIconClass =
     "flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white shadow-lg transition-transform duration-150 hover:scale-105";
 
   return (
     <div className="fixed right-6 bottom-6 z-50 flex flex-col items-end gap-3">
-      {open && (
-        <button
-          type="button"
-          onClick={() => {
-            setOpen(false);
-            openTawkChat();
-          }}
-          className="flex cursor-pointer items-center gap-3 opacity-0 transition-all duration-200 ease-out"
-          style={{ animation: `fab-item-in 200ms ease-out 0ms forwards` }}
-        >
-          <span className={itemLabelClass}>Написать в чат</span>
-          <span className={itemIconClass} style={{ background: "var(--color-primary)" }}>
-            <ChatIcon />
-          </span>
-        </button>
-      )}
       {open &&
         messengerItems.map((item, i) => {
           const isExternal = item.href.startsWith("http") || item.href.startsWith("viber:");
@@ -68,7 +29,7 @@ export default function FloatingContact() {
               href={item.href}
               {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
               className="flex items-center gap-3 opacity-0 transition-all duration-200 ease-out"
-              style={{ animation: `fab-item-in 200ms ease-out ${(i + 1) * 40}ms forwards` }}
+              style={{ animation: `fab-item-in 200ms ease-out ${i * 40}ms forwards` }}
             >
               <span className={itemLabelClass}>{item.label}</span>
               <span className={messengerIconClass}>{item.icon}</span>
