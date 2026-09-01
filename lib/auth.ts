@@ -1,97 +1,54 @@
-import NextAuth from "next-auth";
-import Credentials from "next-auth/providers/credentials";
+import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 
-// Fallback in case ADMIN_EMAIL/ADMIN_PASSWORD_HASH are missing or
-// misconfigured in the deploy environment (this happened once already —
-// Next.js's $-expansion in .env files silently corrupted the hash). The
-// fallback is the same bcrypt hash as .env, never the plaintext password,
-// so it stays safe to commit.
-const FALLBACK_ADMIN_EMAIL = "speckliningbel@yandex.by";
-const FALLBACK_ADMIN_PASSWORD_HASH = "$2b$10$MOPQRYsXtmrWwnxirpYWd.HLT4HqW42ephY7l3mWr7K/pGAZfVR3m";
+// Single hardcoded admin — no accounts/DB. Email can be overridden via env,
+// but the bcrypt hash is hardcoded rather than read from ADMIN_PASSWORD_HASH
+// env/.env: every bcrypt hash starts with "$2b$10$...", and Next.js's
+// built-in @next/env loader does $VAR expansion on .env files, silently
+// stripping "$2b", "$10", etc. as references to undefined variables and
+// corrupting the hash on every server start. Hardcoding it here sidesteps
+// that entirely — it's a hash, never the plaintext, so it's safe to commit.
+const ADMIN_EMAIL = "speckliningbel@yandex.by";
+const ADMIN_PASSWORD_HASH = "$2b$10$MOPQRYsXtmrWwnxirpYWd.HLT4HqW42ephY7l3mWr7K/pGAZfVR3m";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
-  trustHost: true,
-  session: { strategy: "jwt" },
-  pages: { signIn: "/admin/login" },
-  providers: [
-    Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      // Single hardcoded admin — no accounts/DB. Credentials live in env
-      // (ADMIN_PASSWORD_HASH is a bcrypt hash, never the plaintext), with a
-      // baked-in fallback if env is missing/broken (see FALLBACK_* above).
-      async authorize(credentials) {
-        console.log('=== AUTHORIZE CALLED ===');
+export const ADMIN_SESSION_COOKIE = "admin_session";
 
-        const email = credentials?.email as string | undefined;
-        const password = credentials?.password as string | undefined;
+export function adminEmail(): string {
+  return process.env.ADMIN_EMAIL || ADMIN_EMAIL;
+}
 
-        console.log('Credentials:', {
-          email: email,
-          passwordLength: password?.length || 0
-        });
+// Deterministic token derived from the server secret — no session store
+// needed for a single hardcoded admin, and it's safe to compare in
+// middleware without a DB round-trip. Rotates automatically whenever
+// AUTH_SECRET changes.
+export function adminSessionToken(): string {
+  const secret = process.env.AUTH_SECRET?.trim() || "insecure-fallback-secret";
+  return crypto.createHmac("sha256", secret).update("admin-session-v1").digest("hex");
+}
 
-        if (typeof email !== "string" || typeof password !== "string") {
-          console.log('Invalid types');
-          return null;
-        }
+export async function verifyAdminCredentials(email: string, password: string): Promise<boolean> {
+  if (email !== adminEmail()) return false;
+  return bcrypt.compare(password, ADMIN_PASSWORD_HASH);
+}
 
-        const adminEmail = process.env.ADMIN_EMAIL || FALLBACK_ADMIN_EMAIL;
-        const adminHash = process.env.ADMIN_PASSWORD_HASH || FALLBACK_ADMIN_PASSWORD_HASH;
+export async function createAdminSession(): Promise<void> {
+  const store = await cookies();
+  store.set(ADMIN_SESSION_COOKIE, adminSessionToken(), {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 30,
+  });
+}
 
-        console.log('Env check:', {
-          adminEmail: adminEmail,
-          usingEnvHash: !!process.env.ADMIN_PASSWORD_HASH,
-          adminHashLength: adminHash.length
-        });
+export async function destroyAdminSession(): Promise<void> {
+  const store = await cookies();
+  store.delete(ADMIN_SESSION_COOKIE);
+}
 
-        if (email !== adminEmail) {
-          console.log('Email mismatch:', {
-            provided: email,
-            expected: adminEmail
-          });
-          return null;
-        }
-
-        console.log('Comparing passwords...');
-        const valid = await bcrypt.compare(password, adminHash);
-        console.log('Password valid:', valid);
-
-        if (!valid) {
-          console.log('Invalid password');
-          return null;
-        }
-
-        console.log('✅ Auth successful!');
-        return {
-          id: "admin",
-          email: adminEmail,
-          role: "ADMIN"
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    jwt({ token, user }) {
-      console.log('=== JWT CALLBACK ===');
-      console.log('User:', user);
-      if (user) {
-        token.role = (user as { role: string }).role;
-        token.id = user.id;
-      }
-      return token;
-    },
-    session({ session, token }) {
-      console.log('=== SESSION CALLBACK ===');
-      console.log('Token:', token);
-      if (session.user) {
-        session.user.role = token.role as string | undefined;
-        session.user.id = token.id as string;
-      }
-      return session;
-    },
-  },
-});
+export async function isAdminAuthenticated(): Promise<boolean> {
+  const store = await cookies();
+  return store.get(ADMIN_SESSION_COOKIE)?.value === adminSessionToken();
+}

@@ -1,15 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { OrderKind } from "@/lib/dbEnums";
 import { deriveStatus } from "@/lib/orderStatus";
 import { notifyCustomer } from "@/lib/telegramNotify";
 
 async function requireAdmin() {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  if (!(await isAdminAuthenticated())) {
     throw new Error("Unauthorized");
   }
 }

@@ -2,13 +2,12 @@
 
 import crypto from "crypto";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getBotUsername, isTelegramConfigured } from "@/lib/telegram";
 
 export async function generateTelegramLinkToken(): Promise<{ ok: true; url: string } | { ok: false; message: string }> {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  if (!(await isAdminAuthenticated())) {
     return { ok: false, message: "Требуются права администратора." };
   }
   if (!isTelegramConfigured()) {
@@ -34,8 +33,7 @@ export async function generateTelegramLinkToken(): Promise<{ ok: true; url: stri
 }
 
 export async function disconnectTelegram(): Promise<void> {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") return;
+  if (!(await isAdminAuthenticated())) return;
 
   await prisma.adminSettings.upsert({
     where: { id: "admin" },

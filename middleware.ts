@@ -1,27 +1,26 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextResponse, type NextRequest } from "next/server";
+import { ADMIN_SESSION_COOKIE, adminSessionToken } from "@/lib/auth";
 
-// Credentials provider + Prisma/bcrypt need the Node runtime, not Edge.
+// crypto (HMAC) needs the Node runtime, not Edge.
 export const runtime = "nodejs";
 
-export default auth((req) => {
-  const isLoggedIn = !!req.auth;
-  const isAdmin = req.auth?.user.role === "ADMIN";
+export default function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const isLoggedIn = req.cookies.get(ADMIN_SESSION_COOKIE)?.value === adminSessionToken();
 
   if (pathname === "/admin/login") {
-    if (isLoggedIn && isAdmin) {
+    if (isLoggedIn) {
       return NextResponse.redirect(new URL("/admin", req.url));
     }
     return NextResponse.next();
   }
 
-  if (!isLoggedIn || !isAdmin) {
+  if (!isLoggedIn) {
     return NextResponse.redirect(new URL("/admin/login", req.url));
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: ["/admin/:path*"],

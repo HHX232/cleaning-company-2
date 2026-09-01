@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { imageUrl, putImage } from "@/lib/imageStorage";
 
@@ -13,8 +13,7 @@ function isTargetField(value: FormDataEntryValue | null): value is TargetField {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (session?.user.role !== "ADMIN") {
+  if (!(await isAdminAuthenticated())) {
     return new Response("Unauthorized", { status: 401 });
   }
 

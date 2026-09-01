@@ -1,22 +1,24 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { auth, signOut } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { adminEmail, destroyAdminSession, isAdminAuthenticated } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const session = await auth();
+  const authenticated = await isAdminAuthenticated();
 
   // /admin/login has no session (middleware guarantees this is the only
   // reachable page in that state) — it renders its own centered form, no
   // nav chrome needed.
-  if (!session) {
+  if (!authenticated) {
     return <>{children}</>;
   }
 
   async function logout() {
     "use server";
-    await signOut({ redirectTo: "/admin/login" });
+    await destroyAdminSession();
+    redirect("/admin/login");
   }
 
   return (
@@ -39,7 +41,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         </nav>
         <form action={logout} className="shrink-0">
           <button type="submit" className="text-sm whitespace-nowrap text-muted hover:text-ink">
-            Выйти ({session.user.email})
+            Выйти ({adminEmail()})
           </button>
         </form>
       </header>
