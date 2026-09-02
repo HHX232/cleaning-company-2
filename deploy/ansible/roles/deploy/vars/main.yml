@@ -1,7 +1,6 @@
 ---
 app_name: cleaning
-app_dir: /opt/{{ app_name }}
-domain: "xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais"
+app_dir: /var/www/www-root/data/www/xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais
 
 repo_url: https://github.com/HHX232/cleaning-company-2.git
 branch: main
@@ -9,4 +8,21 @@ branch: main
 nodejs_version: "24.x"
 nodejs_install_script: "https://deb.nodesource.com/setup_{{ nodejs_version }}"
 
-pm2_instance: "{{ app_name }}"
+# PM2 configuration
+pm2_instance: "nextjs-app"
+pm2_port: 10001
+pm2_user: "www-root"
+pm2_home: "/var/www/www-root/data/.pm2"
+
+# Nginx config paths
+nginx_vhost_path: /etc/nginx/vhosts/www-root
+nginx_resources_path: /etc/nginx/vhosts-resources/xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais
+nginx_domain: "xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--90ais"
+
+# Logs
+logs_path: "{{ app_dir }}/logs"
+access_log: "{{ logs_path }}/access.log"
+error_log: "{{ logs_path }}/error.log"
+
+# Ansible user
+ansible_user: root

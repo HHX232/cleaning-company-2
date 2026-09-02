@@ -8,6 +8,7 @@
       - build-essential
       - python3
       - python3-apt
+      - acl
     state: present
     update_cache: true
   become: true
@@ -20,20 +21,22 @@
     creates: /usr/bin/node
   become: true
 
-- name: Install PM2 globally
+- name: Install PM2 globally via npm
   ansible.builtin.npm:
     name: pm2
     global: true
     state: present
+    path: /usr/bin
   become: true
 
 - name: Create application directory
   ansible.builtin.file:
     path: "{{ app_dir }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "{{ pm2_user }}"
+    group: "{{ pm2_user }}"
     mode: "0755"
+    recurse: true
   become: true
 
 - name: Clone or update repository
@@ -43,91 +46,99 @@
     version: "{{ branch }}"
     force: true
     depth: 1
-  become_user: "{{ ansible_user }}"
+  become_user: "{{ pm2_user }}"
   become: true
   register: git_result
+
+- name: Create logs directory
+  ansible.builtin.file:
+    path: "{{ logs_path }}"
+    state: directory
+    owner: "{{ pm2_user }}"
+    group: "{{ pm2_user }}"
+    mode: "0755"
+  become: true
 
 - name: Create .env from template
   ansible.builtin.template:
     src: .env.j2
     dest: "{{ app_dir }}/.env"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "{{ pm2_user }}"
+    group: "{{ pm2_user }}"
     mode: "0600"
   become: true
   no_log: true
+  when: false
 
 - name: Install npm dependencies
   ansible.builtin.command:
-    cmd: npm ci
+    cmd: npm ci --omit=dev --no-fund --no-audit
     chdir: "{{ app_dir }}"
-  become_user: "{{ ansible_user }}"
+  become_user: "{{ pm2_user }}"
   become: true
   register: npm_install
   changed_when: "'added' in npm_install.stdout"
+  environment:
+    NODE_OPTIONS: "--max-old-space-size=2048"
 
-- name: Ensure prisma directory exists
-  ansible.builtin.file:
-    path: "{{ app_dir }}/prisma"
-    state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-    mode: "0755"
-  become_user: "{{ ansible_user }}"
-  become: true
-
-- name: Create database schema with prisma db push
+- name: Install build dependencies (Tailwind)
   ansible.builtin.command:
-    cmd: npx prisma db push --skip-generate
+    cmd: npm install --save-dev @tailwindcss/postcss postcss
     chdir: "{{ app_dir }}"
-  become_user: "{{ ansible_user }}"
+  become_user: "{{ pm2_user }}"
   become: true
-  register: db_push
-  changed_when: "'Database is up to date' not in db_push.stdout"
-  failed_when: db_push.rc != 0
-
-- name: Seed database
-  ansible.builtin.command:
-    cmd: npm run seed
-    chdir: "{{ app_dir }}"
-  become_user: "{{ ansible_user }}"
-  become: true
-  register: seed_result
-  changed_when: "'Seeded' in seed_result.stdout"
-  failed_when: seed_result.rc != 0
+  register: npm_tailwind
+  changed_when: "'added' in npm_tailwind.stdout"
+  when: npm_install is defined
 
 - name: Build Next.js application
-  ansible.builtin.command:
-    cmd: npm run build
+  ansible.builtin.shell:
+    cmd: |
+      export NODE_OPTIONS="--max-old-space-size=2048"
+      export NEXT_TELEMETRY_DISABLED=1
+      export DATABASE_URL="file:{{ app_dir }}/prisma/dev.db"
+      npm run build
     chdir: "{{ app_dir }}"
-  become_user: "{{ ansible_user }}"
+  become_user: "{{ pm2_user }}"
   become: true
   register: build_result
   changed_when: "'Compiled successfully' in build_result.stdout"
+  timeout: 900
 
-- name: Ensure static files are copied to standalone output
+- name: Remove dev dependencies after build
   ansible.builtin.command:
-    cmd: cp -r {{ app_dir }}/public {{ app_dir }}/.next/standalone/
-  become_user: "{{ ansible_user }}"
+    cmd: npm prune --omit=dev --no-fund --no-audit
+    chdir: "{{ app_dir }}"
+  become_user: "{{ pm2_user }}"
   become: true
-  register: copy_public
-  changed_when: copy_public.rc == 0
+  when: build_result is defined
+
+- name: Create nginx vhosts directory
+  ansible.builtin.file:
+    path: "{{ nginx_vhost_path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  become: true
+
+- name: Create nginx resources directory
+  ansible.builtin.file:
+    path: "{{ nginx_resources_path }}/dynamic"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+    recurse: true
+  become: true
 
 - name: Deploy nginx site configuration
   ansible.builtin.template:
     src: nginx.conf.j2
-    dest: "/etc/nginx/sites-available/{{ app_name }}"
+    dest: "{{ nginx_vhost_path }}/{{ nginx_domain }}.conf"
     owner: root
     group: root
     mode: "0644"
-  become: true
-  notify: Reload nginx
-
-- name: Enable nginx site
-  ansible.builtin.file:
-    src: "/etc/nginx/sites-available/{{ app_name }}"
-    dest: "/etc/nginx/sites-enabled/{{ app_name }}"
-    state: link
   become: true
   notify: Reload nginx
 
@@ -135,8 +146,8 @@
   ansible.builtin.template:
     src: ecosystem.config.js.j2
     dest: "{{ app_dir }}/ecosystem.config.js"
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "{{ pm2_user }}"
+    group: "{{ pm2_user }}"
     mode: "0644"
   become: true
 
@@ -144,23 +155,70 @@
   ansible.builtin.file:
     path: "{{ app_dir }}"
     state: directory
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
+    owner: "{{ pm2_user }}"
+    group: "{{ pm2_user }}"
     mode: "0755"
     recurse: true
   become: true
 
-- name: Start or restart application via PM2
-  ansible.builtin.command:
-    cmd: pm2 startOrRestart {{ app_dir }}/ecosystem.config.js
-  become_user: "{{ ansible_user }}"
+- name: Ensure PM2 is running for {{ pm2_user }}
+  ansible.builtin.shell:
+    cmd: |
+      export PM2_HOME="{{ pm2_home }}"
+      pm2 list
+    chdir: "{{ app_dir }}"
+  become_user: "{{ pm2_user }}"
+  become: true
+  register: pm2_check
+  changed_when: false
+  ignore_errors: true
+
+- name: Start or restart application via PM2 (as {{ pm2_user }})
+  ansible.builtin.shell:
+    cmd: |
+      export PM2_HOME="{{ pm2_home }}"
+      pm2 startOrRestart {{ app_dir }}/ecosystem.config.js
+    chdir: "{{ app_dir }}"
+  become_user: "{{ pm2_user }}"
   become: true
   register: pm2_result
   changed_when: "'restart' in pm2_result.stdout or 'start' in pm2_result.stdout"
 
 - name: Save PM2 process list for auto-restart
-  ansible.builtin.command:
-    cmd: pm2 save
-  become_user: "{{ ansible_user }}"
+  ansible.builtin.shell:
+    cmd: |
+      export PM2_HOME="{{ pm2_home }}"
+      pm2 save
+    chdir: "{{ app_dir }}"
+  become_user: "{{ pm2_user }}"
   become: true
   changed_when: false
+
+- name: Setup PM2 startup for {{ pm2_user }}
+  ansible.builtin.shell:
+    cmd: |
+      export PM2_HOME="{{ pm2_home }}"
+      pm2 startup systemd -u {{ pm2_user }} --hp /var/www/www-root/data
+    chdir: "{{ app_dir }}"
+  become_user: "{{ pm2_user }}"
+  become: true
+  register: pm2_startup
+  changed_when: "'already' not in pm2_startup.stdout"
+  ignore_errors: true
+
+- name: Wait for application to start
+  ansible.builtin.wait_for:
+    port: "{{ pm2_port }}"
+    host: "127.0.0.1"
+    timeout: 30
+    delay: 2
+
+- name: Check if application is running
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ pm2_port }}"
+    status_code: 200
+    timeout: 10
+  register: app_check
+  until: app_check.status == 200
+  retries: 15
+  delay: 3

@@ -1,8 +1,11 @@
 - name: Deploy cleaning application
-  hosts: all
+  hosts: 87.232.67.175
   become: true
+  become_user: root
   roles:
     - deploy
   vars_files:
     - vars/vault.yml
     - roles/deploy/vars/main.yml
+  environment:
+    PM2_HOME: "/var/www/www-root/data/.pm2"

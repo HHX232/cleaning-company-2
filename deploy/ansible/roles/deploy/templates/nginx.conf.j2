@@ -1,69 +1,86 @@
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-    server_name _;
-    
-    return 403;
+	server_name {{ nginx_domain }} www.{{ nginx_domain }};
+	charset off;
+	index index.php index.html;
+	disable_symlinks if_not_owner from=$root_path;
+	include /etc/nginx/vhosts-includes/*.conf;
+	include {{ nginx_resources_path }}/*.conf;
+	include /etc/nginx/users-resources/www-root/*.conf;
+	access_log {{ access_log }};
+	error_log {{ error_log }} notice;
+	set $root_path {{ app_dir }};
+	root $root_path;
+	listen 87.232.67.175:80;
+	gzip on;
+	gzip_comp_level 5;
+	gzip_disable "msie6";
+	gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml;
+
+	location / {
+		location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpe?g|avi|zip|gz|bz2?|rar|swf|webp|woff|woff2)$ {
+			expires 24h;
+			try_files $uri $uri/ @fallback;
+		}
+		location / {
+			try_files /does_not_exists @fallback;
+		}
+	}
+
+	location @fallback {
+		include {{ nginx_resources_path }}/dynamic/*.conf;
+		proxy_pass http://127.0.0.1:{{ pm2_port }};
+		proxy_redirect http://127.0.0.1:{{ pm2_port }} /;
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+		proxy_set_header X-Forwarded-Port $server_port;
+		access_log off;
+	}
 }
 
 server {
-    listen 80;
-    listen [::]:80;
-    server_name {{ domain }} www.{{ domain }};
+	server_name {{ nginx_domain }} www.{{ nginx_domain }};
+	ssl_certificate "/var/www/httpd-cert/www-root/xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--_custom_1-9yh8b7d.crtca";
+	ssl_certificate_key "/var/www/httpd-cert/www-root/xn----7sbahhhpgbbdakphi4aafbjo4ap1k6f.xn--_custom_1-9yh8b7d.key";
+	ssl_ciphers EECDH:+AES256:-3DES:RSA+AES:!NULL:!RC4;
+	ssl_prefer_server_ciphers on;
+	ssl_protocols TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;
+	add_header Strict-Transport-Security "max-age=31536000;";
+	ssl_dhparam /etc/ssl/certs/dhparam4096.pem;
+	charset off;
+	index index.php index.html;
+	disable_symlinks if_not_owner from=$root_path;
+	include /etc/nginx/vhosts-includes/*.conf;
+	include {{ nginx_resources_path }}/*.conf;
+	include /etc/nginx/users-resources/www-root/*.conf;
+	access_log {{ access_log }};
+	error_log {{ error_log }} notice;
+	set $root_path {{ app_dir }};
+	root $root_path;
+	listen 87.232.67.175:443 ssl;
+	gzip on;
+	gzip_comp_level 5;
+	gzip_disable "msie6";
+	gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript image/svg+xml;
 
-    return 301 https://{{ domain }}$request_uri;
-}
+	location / {
+		location ~* ^.+\.(jpg|jpeg|gif|png|svg|js|css|mp3|ogg|mpe?g|avi|zip|gz|bz2?|rar|swf|webp|woff|woff2)$ {
+			expires 24h;
+			try_files $uri $uri/ @fallback;
+		}
+		location / {
+			try_files /does_not_exists @fallback;
+		}
+	}
 
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name www.{{ domain }};
-
-    ssl_certificate /etc/letsencrypt/live/{{ domain }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ domain }}/privkey.pem;
-
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-
-    return 301 https://{{ domain }}$request_uri;
-}
-
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name {{ domain }};
-
-    client_max_body_size 8M;
-
-    ssl_certificate /etc/letsencrypt/live/{{ domain }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ domain }}/privkey.pem;
-
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-
-    location /_next/static/ {
-        alias {{ app_dir }}/.next/static/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    location /static/ {
-        alias {{ app_dir }}/static/;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-
-    location / {
-        proxy_pass http://127.0.0.1:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_cache_bypass $http_upgrade;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
+	location @fallback {
+		include {{ nginx_resources_path }}/dynamic/*.conf;
+		proxy_pass http://127.0.0.1:{{ pm2_port }};
+		proxy_redirect http://127.0.0.1:{{ pm2_port }} /;
+		proxy_set_header Host $host;
+		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+		proxy_set_header X-Forwarded-Proto $scheme;
+		proxy_set_header X-Forwarded-Port $server_port;
+		access_log off;
+	}
 }
