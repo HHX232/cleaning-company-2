@@ -237,3 +237,207 @@ model PriceRow {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// Homepage hero banner (components/landing/Hero.tsx) plus the "Причины
+// заказать уборку" carousel (components/landing/WhyUs.tsx) — the carousel's
+// photos stay tied to the fixed SiteImage keys "why-us-reason1".."5"
+// (lib/homeImageSlots.ts), only its copy lives here as `reasons` (JSON array
+// of {tag,title,text}, same 5-item order as the image slots). Also covers
+// the rest of the homepage's own static sections: "Простой и понятный
+// процесс" timeline, "Уборка с понятными условиями" benefits, the bottom
+// CTA banner, and the homepage FAQ (also used for the page's FAQ JSON-LD).
+// Singleton row (id "home"). Admin-editable at /admin.
+model HomeContent {
+  id                 String   @id @default("home")
+  heroEyebrow        String
+  heroTitleMain      String
+  heroTitleHighlight String
+  heroTitleSuffix    String
+  heroSubtitle       String
+  heroCtaPrimary     String
+  heroCtaSecondary   String
+  // JSON string array of service badge labels.
+  heroServices Json
+  // JSON array of {value,label}.
+  heroStats    Json
+  // JSON array of {tag,title,text}, fixed length 5.
+  reasons      Json
+  reasonsSectionTitle String
+
+  specialistsTitle String
+  calculatorTitle  String
+  reviewsTitle     String
+  galleryTitle     String
+  promotionsTitle  String
+  servicesTitle    String
+  pricesTitle      String
+
+  howItWorksTitle String
+  howItWorksLead  String
+  // JSON array of {icon,title,text} — "Простой и понятный процесс" timeline.
+  howItWorks Json
+
+  serviceGuaranteesTitle String
+  // JSON array of {icon,title,text} — "Уборка с понятными условиями" block.
+  serviceGuarantees Json
+
+  faqSectionTitle String
+  // JSON array of {question,answer} — homepage FAQ + its JSON-LD.
+  faqItems Json
+
+  ctaBannerTitle   String
+  ctaBannerCtaLabel String
+  // JSON string array of paragraphs shown in the homepage CTA banner.
+  ctaBannerParagraphs Json
+
+  updatedAt DateTime @updatedAt
+}
+
+// The 5 fixed service-category hub pages (uborka-kvartir, uborka-domov,
+// uborka-kommercheskih-pomeshhenij, speczuborka, mojka-okon), each rendered
+// by components/service-page/ServiceCategoryHub.tsx. Rows are fixed by
+// `slug` (matches the route folder) — admin edits existing rows, doesn't
+// add/remove them. Admin-editable at /admin/service-categories.
+model ServiceCategoryPage {
+  id      String @id @default(cuid())
+  slug    String @unique
+  href    String
+  label   String
+  title   String
+  eyebrow String
+  lead    String
+  order   Int    @default(0)
+
+  updatedAt DateTime @updatedAt
+}
+
+// Shared boilerplate on every ServiceCategoryPage hub page (the "Выберите
+// услугу" list section and the bottom CTA) — singleton row (id
+// "service-hub"). Admin-editable at /admin/service-categories.
+model ServiceHubShared {
+  id           String @id @default("service-hub")
+  sectionTitle String
+  emptyText    String
+  ctaTitle     String
+  ctaText      String
+
+  updatedAt DateTime @updatedAt
+}
+
+// Shared boilerplate rendered on every individual service page
+// (app/[slug]/page.tsx via components/service-page/ServiceCategoryPage.tsx)
+// — team/FAQ/SEO-text/consultation-CTA/process-steps/mid-banner copy that's
+// identical across all ~65 pages, only what varies per page lives on
+// ServicePage itself. Singleton row (id "service-shared"). The mid-banner
+// staff photo stays a SiteImage slot ("svc-mid-banner-staff"), not a field
+// here. Admin-editable at /admin/service-shared.
+model ServiceSharedContent {
+  id String @id @default("service-shared")
+
+  heroCtaLabel String
+
+  // JSON array of {num,title,text}, fixed length 4 — components/service-page/ProcessSteps.tsx.
+  processSteps Json
+
+  // components/service-page/MidPageCta.tsx.
+  midBannerStaffName String
+  // JSON string array of role labels.
+  midBannerStaffRoles Json
+  midBannerTitle      String
+  // JSON string array of paragraphs.
+  midBannerParagraphs Json
+  midBannerCtaLabel   String
+
+  howToOrderTitle     String
+  howToOrderIntro     String
+  howToOrderOutroLead String
+  howToOrderOutroBold String
+  howToOrderOutroTail String
+
+  teamTitle     String
+  teamSubtitle1 String
+  teamSubtitle2 String
+
+  calculatorTitle String
+  reviewsTitle    String
+  galleryTitle    String
+
+  // JSON array of {question,answer}, shown as the service page's own FAQ.
+  serviceFaq Json
+  // JSON string array of SEO paragraphs shown under "Читать полностью".
+  seoText Json
+
+  // components/service-page/ConsultationCta.tsx.
+  consultationEyebrow  String
+  consultationTitle    String
+  consultationSubtitle String
+  // JSON string array of bullet perks.
+  consultationPerks    Json
+  consultationCtaLabel String
+
+  updatedAt DateTime @updatedAt
+}
+
+// "Наши гарантии" page (app/nashi-garantii). Singleton row (id
+// "guarantees"). items is a JSON array of {title,text} cards.
+// Admin-editable at /admin/guarantees.
+model GuaranteesPage {
+  id       String @id @default("guarantees")
+  eyebrow  String
+  heading  String
+  lead     String
+  items    Json
+  ctaTitle String
+  ctaText  String
+
+  updatedAt DateTime @updatedAt
+}
+
+// "Почему выбирают нас" 8-reason grid (components/landing/WhyChooseUs.tsx),
+// shown on the homepage and its own page (app/pochemu-vybirayut-nas).
+// Singleton row (id "why-us"). advantages is a JSON array of
+// {icon,title,text}. Admin-editable at /admin/why-us.
+model WhyUsPage {
+  id          String @id @default("why-us")
+  eyebrow     String
+  title       String
+  description String
+  advantages  Json
+
+  updatedAt DateTime @updatedAt
+}
+
+// "Контакты" page (app/contacts). Singleton row (id "contacts"). Phone/email
+// values themselves stay in lib/content.ts's `company` config (used
+// site-wide in Header/Footer/SEO), only this page's own copy lives here.
+// Admin-editable at /admin/contacts.
+model ContactsPage {
+  id                String @id @default("contacts")
+  eyebrow           String
+  heading           String
+  lead              String
+  hoursValue        String
+  hoursText         String
+  areaText          String
+  phoneNote         String
+  emailNote         String
+  messengersHeading String
+  ctaTitle          String
+  ctaText           String
+
+  updatedAt DateTime @updatedAt
+}
+
+// Privacy policy (app/privacy) and terms of service (app/terms) — id is
+// "privacy" or "terms". sectionsText holds "### Title" headed blocks
+// (lib/legalData.ts parses on the "### " marker), so an admin can add or
+// remove sections just by editing lines, same convention as the pipe-joined
+// lists elsewhere. Admin-editable at /admin/legal.
+model LegalPage {
+  id            String @id
+  heading       String
+  effectiveDate String
+  sectionsText  String
+
+  updatedAt DateTime @updatedAt
+}

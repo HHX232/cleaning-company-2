@@ -1,6 +1,7 @@
-import { whyChooseUs } from "@/lib/content";
+import { getWhyUsPageContent } from "@/lib/whyUsPageData";
 
-export default function WhyChooseUs({ as: Heading = "h2" }: { as?: "h1" | "h2" }) {
+export default async function WhyChooseUs({ as: Heading = "h2" }: { as?: "h1" | "h2" }) {
+  const whyChooseUs = await getWhyUsPageContent();
   return (
     <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
       <div className="mx-auto mb-8 max-w-200 sm:mb-10">

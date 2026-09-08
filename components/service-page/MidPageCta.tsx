@@ -2,7 +2,6 @@
 
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { contactLinks } from "@/lib/content";
-import { officeMidBanner } from "@/lib/serviceCategoryContent";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import { TelegramIcon, ViberIcon, WhatsAppIcon } from "@/components/ui/MessengerIcons";
 
@@ -12,9 +11,17 @@ const messengers = [
   { key: "whatsapp", label: "WhatsApp", href: contactLinks.whatsapp, icon: <WhatsAppIcon className="h-7 w-7" /> },
 ];
 
-export default function MidPageCta() {
+type MidPageCtaProps = {
+  staffName: string;
+  staffRoles: string[];
+  staffPhotoUrl?: string;
+  title: string;
+  paragraphs: string[];
+  ctaLabel: string;
+};
+
+export default function MidPageCta({ staffName, staffRoles, staffPhotoUrl, title, paragraphs, ctaLabel }: MidPageCtaProps) {
   const openContactModal = useContactModal();
-  const { staffBadge, title, paragraphs, ctaLabel } = officeMidBanner;
 
   return (
     <section className="px-4 pt-10 pb-10 sm:px-6 sm:pb-14 lg:px-10">
@@ -23,11 +30,11 @@ export default function MidPageCta() {
 
         <div className="relative mb-5 flex items-center gap-3">
           <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full sm:h-16 sm:w-16">
-            <ImagePlaceholder label={`Фото: ${staffBadge.name}`} src={staffBadge.photoUrl} />
+            <ImagePlaceholder label={`Фото: ${staffName}`} src={staffPhotoUrl} />
           </div>
           <div>
-            <div className="text-sm font-bold text-white">{staffBadge.name}</div>
-            <div className="text-xs text-[#cfe0d2]">{staffBadge.roles.join(" · ")}</div>
+            <div className="text-sm font-bold text-white">{staffName}</div>
+            <div className="text-xs text-[#cfe0d2]">{staffRoles.join(" · ")}</div>
           </div>
         </div>
 

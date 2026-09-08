@@ -14,7 +14,7 @@ import MidPageCta from "./MidPageCta";
 import ServiceInfoBlocks from "./ServiceInfoBlocks";
 import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
-import { howToOrder, seoText, serviceFaq, team } from "@/lib/serviceCategoryContent";
+import type { ServiceSharedContent } from "@/lib/serviceSharedData";
 import { teamPhotoDefaultFor } from "@/lib/teamPhotoDefaults";
 import type { CalculatorOptionsByField } from "@/lib/calculator";
 
@@ -60,6 +60,8 @@ type ServiceCategoryPageProps = {
   calculatorOptions: CalculatorOptionsByField;
   reviews: ReviewItem[];
   galleryItems: GalleryItemDto[];
+  shared: ServiceSharedContent;
+  midBannerStaffPhotoUrl?: string;
 };
 
 export default function ServiceCategoryPage({
@@ -77,6 +79,8 @@ export default function ServiceCategoryPage({
   calculatorOptions,
   reviews,
   galleryItems,
+  shared,
+  midBannerStaffPhotoUrl,
 }: ServiceCategoryPageProps) {
   const openContactModal = useContactModal();
 
@@ -111,7 +115,7 @@ export default function ServiceCategoryPage({
               onClick={openContactModal}
               className="mb-6 inline-block w-fit rounded-[11px] bg-primary px-6 py-3.5 text-sm font-bold text-on-primary transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.25)] active:translate-y-0 active:scale-[0.98] sm:mb-9 sm:px-9 sm:py-4.25 sm:text-base"
             >
-              Заказать уборку
+              {shared.heroCtaLabel}
             </button>
 
             {showFeaturesBlock && featureTags.length > 0 && (
@@ -139,24 +143,33 @@ export default function ServiceCategoryPage({
 
       <section className="bg-surface px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
         <div className="mx-auto max-w-200">
-          <h2 className="mb-4 text-xl font-extrabold text-ink sm:text-2xl">{howToOrder.title}</h2>
-          <p className="mb-4 text-sm leading-relaxed text-muted sm:text-[15px]">{howToOrder.intro}</p>
+          <h2 className="mb-4 text-xl font-extrabold text-ink sm:text-2xl">{shared.howToOrderTitle}</h2>
+          <p className="mb-4 text-sm leading-relaxed text-muted sm:text-[15px]">{shared.howToOrderIntro}</p>
           <p className="text-sm leading-relaxed text-muted sm:text-[15px]">
-            {howToOrder.outroLead} <strong className="text-ink">{howToOrder.outroBold}</strong>{" "}
-            {howToOrder.outroTail}
+            {shared.howToOrderOutroLead} <strong className="text-ink">{shared.howToOrderOutroBold}</strong>{" "}
+            {shared.howToOrderOutroTail}
           </p>
         </div>
       </section>
 
-      <ProcessSteps />
-      {showMidBanner && <MidPageCta />}
+      <ProcessSteps steps={shared.processSteps} />
+      {showMidBanner && (
+        <MidPageCta
+          staffName={shared.midBannerStaffName}
+          staffRoles={shared.midBannerStaffRoles}
+          staffPhotoUrl={midBannerStaffPhotoUrl}
+          title={shared.midBannerTitle}
+          paragraphs={shared.midBannerParagraphs}
+          ctaLabel={shared.midBannerCtaLabel}
+        />
+      )}
 
       <section className="px-4 pt-10 pb-6 sm:px-6 sm:pt-14 lg:px-10">
-        <h2 className="mb-2 text-center text-xl font-extrabold text-ink sm:text-2xl">{team.title}</h2>
+        <h2 className="mb-2 text-center text-xl font-extrabold text-ink sm:text-2xl">{shared.teamTitle}</h2>
         <p className="mb-8 text-center text-sm text-muted sm:text-[15px]">
-          {team.subtitle[0]}
+          {shared.teamSubtitle1}
           <br />
-          {team.subtitle[1]}
+          {shared.teamSubtitle2}
         </p>
         <div className="mx-auto grid max-w-300 grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
           {teamMembers.map((m, i) => (
@@ -176,7 +189,7 @@ export default function ServiceCategoryPage({
       <section className="px-4 pt-6 pb-10 sm:px-6 sm:pt-8 sm:pb-14 lg:px-10">
         <div className="mx-auto max-w-200 text-sm leading-relaxed text-muted sm:text-[15px]">
           <ReadMore>
-            {seoText.map((p) => (
+            {shared.seoText.map((p) => (
               <p key={p.slice(0, 24)} className="mb-4 last:mb-0">
                 {p}
               </p>
@@ -185,17 +198,24 @@ export default function ServiceCategoryPage({
         </div>
       </section>
 
-      <Gallery title="Примеры работ" items={galleryItems} />
+      <Gallery title={shared.galleryTitle} items={galleryItems} />
 
-      <ConsultationCta imageUrl={consultationImageUrl} />
+      <ConsultationCta
+        imageUrl={consultationImageUrl}
+        eyebrow={shared.consultationEyebrow}
+        title={shared.consultationTitle}
+        subtitle={shared.consultationSubtitle}
+        perks={shared.consultationPerks}
+        ctaLabel={shared.consultationCtaLabel}
+      />
 
       <WhyChooseUs />
 
-      <CalculatorDetailed options={calculatorOptions} />
+      <CalculatorDetailed title={shared.calculatorTitle} options={calculatorOptions} />
 
-      <Reviews reviews={reviews} />
+      <Reviews title={shared.reviewsTitle} reviews={reviews} />
 
-      <Faq title="Вопросы и ответы" items={serviceFaq} defaultOpenIndex={0} />
+      <Faq title="Вопросы и ответы" items={shared.serviceFaq} defaultOpenIndex={0} />
     </div>
   );
 }

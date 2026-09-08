@@ -6,7 +6,7 @@ const PER_PAGE = 3;
 
 export type ReviewItem = { id: string; stars: number; text: string; service: string };
 
-export default function Reviews({ reviews }: { reviews: ReviewItem[] }) {
+export default function Reviews({ title, reviews }: { title: string; reviews: ReviewItem[] }) {
   const [page, setPage] = useState(0);
 
   if (reviews.length === 0) return null;
@@ -18,7 +18,7 @@ export default function Reviews({ reviews }: { reviews: ReviewItem[] }) {
 
   return (
     <section id="reviews" className="bg-surface px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
-      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">Отзывы клиентов</h2>
+      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">{title}</h2>
       <div className="mx-auto flex max-w-300 items-center gap-2 sm:gap-4">
         {pageCount > 1 && (
           <button

@@ -5,14 +5,12 @@ import Link from "next/link";
 import { priceTabs, PriceTabId } from "@/lib/content";
 import type { PriceRowDto } from "@/lib/priceData";
 
-export default function Pricing({ priceData }: { priceData: Record<PriceTabId, PriceRowDto[]> }) {
+export default function Pricing({ title, priceData }: { title: string; priceData: Record<PriceTabId, PriceRowDto[]> }) {
   const [activeTab, setActiveTab] = useState<PriceTabId>("flats");
 
   return (
     <section id="prices" className="px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
-      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">
-        Цены на клининг в Минске
-      </h2>
+      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">{title}</h2>
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-4 lg:grid-cols-[220px_1fr] lg:gap-5">
         <div className="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0 sm:pb-0 lg:sticky lg:top-6 lg:h-fit lg:flex-col lg:self-start lg:overflow-visible">
           {priceTabs.map((tab) => {

@@ -4,6 +4,13 @@ import { PrismaClient } from "@prisma/client";
 import { putImage } from "../lib/imageStorage";
 import { servicePages as pages, serviceBlocks, galleryItems } from "./seedData";
 import { ABOUT_DEFAULTS } from "../lib/aboutData";
+import { HOME_CONTENT_DEFAULTS } from "../lib/homeContentData";
+import { GUARANTEES_DEFAULTS } from "../lib/guaranteesData";
+import { WHY_US_PAGE_DEFAULTS } from "../lib/whyUsPageData";
+import { CONTACTS_DEFAULTS } from "../lib/contactsData";
+import { LEGAL_DEFAULTS, serializeLegalSections } from "../lib/legalData";
+import { SERVICE_CATEGORY_DEFAULTS, SERVICE_HUB_SHARED_DEFAULTS } from "../lib/serviceCategoriesData";
+import { SERVICE_SHARED_DEFAULTS } from "../lib/serviceSharedData";
 
 const prisma = new PrismaClient();
 
@@ -302,6 +309,67 @@ async function main() {
     create: { id: "about", ...ABOUT_DEFAULTS },
   });
   console.log("Seeded About page (create-if-missing).");
+
+  await prisma.homeContent.upsert({
+    where: { id: "home" },
+    update: {},
+    create: { id: "home", ...HOME_CONTENT_DEFAULTS },
+  });
+  await prisma.guaranteesPage.upsert({
+    where: { id: "guarantees" },
+    update: {},
+    create: { id: "guarantees", ...GUARANTEES_DEFAULTS },
+  });
+  await prisma.whyUsPage.upsert({
+    where: { id: "why-us" },
+    update: {},
+    create: { id: "why-us", ...WHY_US_PAGE_DEFAULTS },
+  });
+  await prisma.contactsPage.upsert({
+    where: { id: "contacts" },
+    update: {},
+    create: { id: "contacts", ...CONTACTS_DEFAULTS },
+  });
+  await prisma.legalPage.upsert({
+    where: { id: "privacy" },
+    update: {},
+    create: {
+      id: "privacy",
+      heading: LEGAL_DEFAULTS.privacy.heading,
+      effectiveDate: LEGAL_DEFAULTS.privacy.effectiveDate,
+      sectionsText: serializeLegalSections(LEGAL_DEFAULTS.privacy.sections),
+    },
+  });
+  await prisma.legalPage.upsert({
+    where: { id: "terms" },
+    update: {},
+    create: {
+      id: "terms",
+      heading: LEGAL_DEFAULTS.terms.heading,
+      effectiveDate: LEGAL_DEFAULTS.terms.effectiveDate,
+      sectionsText: serializeLegalSections(LEGAL_DEFAULTS.terms.sections),
+    },
+  });
+  console.log("Seeded home/guarantees/why-us/contacts/legal pages (create-if-missing).");
+
+  for (const cat of SERVICE_CATEGORY_DEFAULTS) {
+    await prisma.serviceCategoryPage.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: cat,
+    });
+  }
+  await prisma.serviceHubShared.upsert({
+    where: { id: "service-hub" },
+    update: {},
+    create: { id: "service-hub", ...SERVICE_HUB_SHARED_DEFAULTS },
+  });
+  await prisma.serviceSharedContent.upsert({
+    where: { id: "service-shared" },
+    update: {},
+    create: { id: "service-shared", ...SERVICE_SHARED_DEFAULTS },
+  });
+  console.log("Seeded service category pages + shared service page content (create-if-missing).");
 
   // Admin login is a single hardcoded credential pair (ADMIN_EMAIL /
   // ADMIN_PASSWORD_HASH env vars, see lib/auth.ts) — nothing to seed.

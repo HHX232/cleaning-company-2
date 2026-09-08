@@ -2,7 +2,6 @@
 
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
 import { contactLinks } from "@/lib/content";
-import { consultationCta } from "@/lib/serviceCategoryContent";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import { TelegramIcon, ViberIcon, WhatsAppIcon } from "@/components/ui/MessengerIcons";
 
@@ -14,9 +13,14 @@ const messengers = [
 
 type ConsultationCtaProps = {
   imageUrl?: string | null;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  perks: string[];
+  ctaLabel: string;
 };
 
-export default function ConsultationCta({ imageUrl }: ConsultationCtaProps) {
+export default function ConsultationCta({ imageUrl, eyebrow, title, subtitle, perks, ctaLabel }: ConsultationCtaProps) {
   const openContactModal = useContactModal();
 
   return (
@@ -26,13 +30,11 @@ export default function ConsultationCta({ imageUrl }: ConsultationCtaProps) {
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(100deg,rgba(21,35,24,0.9)_0%,rgba(21,35,24,0.6)_50%,rgba(21,35,24,0.15)_100%)]" />
 
         <div className="relative flex h-full max-w-140 flex-col justify-center p-7 sm:p-11">
-          <div className="mb-2 text-sm font-bold text-primary">{consultationCta.eyebrow}</div>
-          <h2 className="mb-4 text-2xl leading-tight font-extrabold text-white sm:text-[32px]">
-            {consultationCta.title}
-          </h2>
-          <p className="mb-3 text-sm font-semibold text-white/90">{consultationCta.subtitle}</p>
+          <div className="mb-2 text-sm font-bold text-primary">{eyebrow}</div>
+          <h2 className="mb-4 text-2xl leading-tight font-extrabold text-white sm:text-[32px]">{title}</h2>
+          <p className="mb-3 text-sm font-semibold text-white/90">{subtitle}</p>
           <ul className="mb-7 flex flex-col gap-2 border-l-2 border-primary pl-4 text-sm leading-relaxed text-white/90">
-            {consultationCta.perks.map((perk) => (
+            {perks.map((perk) => (
               <li key={perk}>{perk}</li>
             ))}
           </ul>
@@ -42,7 +44,7 @@ export default function ConsultationCta({ imageUrl }: ConsultationCtaProps) {
               onClick={openContactModal}
               className="rounded-[10px] bg-primary px-7 py-3.5 text-sm font-bold text-on-primary transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.3)] active:translate-y-0 active:scale-[0.98]"
             >
-              {consultationCta.ctaLabel}
+              {ctaLabel}
             </button>
             <div className="flex items-center gap-3">
               {messengers.map((m) => (

@@ -24,3 +24,7 @@ export const homeImageDefaults: Partial<Record<HomeImageSlotKey, string>> = {
 // image of its own: hero background + the bottom consultation-CTA photo.
 export const servicePageHeroDefault = `${P}/pexels-jonathanborba-28576645.webp`;
 export const servicePageConsultationDefault = `${P}/pexels-tima-miroshnichenko-6196685.webp`;
+
+// Fallback for the shared mid-page CTA banner's staff photo
+// (SiteImage key "svc-mid-banner-staff", uploadable at /admin/service-shared).
+export const midBannerStaffDefault = "/images/services/viktoria-badge.webp";

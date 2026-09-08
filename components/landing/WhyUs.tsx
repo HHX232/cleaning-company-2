@@ -2,10 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ImagePlaceholder from "@/components/ui/ImagePlaceholder";
-import { whyUsReasons } from "@/lib/content";
+import type { ReasonSlide } from "@/lib/homeContentData";
 
 type WhyUsProps = {
+  title: string;
   slideSrcs: (string | undefined)[];
+  reasons: ReasonSlide[];
 };
 
 const AUTOPLAY_MS = 6000;
@@ -28,12 +30,12 @@ function ArrowIcon({ className = "" }: { className?: string }) {
   );
 }
 
-export default function WhyUs({ slideSrcs }: WhyUsProps) {
+export default function WhyUs({ title, slideSrcs, reasons }: WhyUsProps) {
   const [active, setActive] = useState(0);
   const trackRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
   const lastInteraction = useRef(0);
-  const count = whyUsReasons.length;
+  const count = reasons.length;
 
   // Scroll only the horizontal track, never the page: scrollIntoView() also
   // nudges vertical scroll to reveal the target, which yanks the whole page
@@ -91,7 +93,7 @@ export default function WhyUs({ slideSrcs }: WhyUsProps) {
   return (
     <section id="services" className="px-4 pt-8 pb-8 sm:px-6 sm:pt-10 sm:pb-10 lg:px-10">
       <div className="mx-auto mb-5 flex max-w-300 flex-wrap items-end justify-between gap-3 sm:mb-7">
-        <h2 className="text-2xl font-extrabold text-ink sm:text-[30px]">Причины заказать уборку</h2>
+        <h2 className="text-2xl font-extrabold text-ink sm:text-[30px]">{title}</h2>
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -119,7 +121,7 @@ export default function WhyUs({ slideSrcs }: WhyUsProps) {
         }}
         className="mx-auto flex max-w-300 snap-x snap-mandatory gap-4 overflow-x-auto pb-1 scrollbar-none touch-pan-x"
       >
-        {whyUsReasons.map((reason, i) => (
+        {reasons.map((reason, i) => (
           <div
             key={reason.title}
             ref={(el) => {
@@ -143,7 +145,7 @@ export default function WhyUs({ slideSrcs }: WhyUsProps) {
       </div>
 
       <div className="mx-auto mt-4 flex max-w-300 items-center gap-2">
-        {whyUsReasons.map((reason, i) => (
+        {reasons.map((reason, i) => (
           <button
             key={reason.title}
             type="button"

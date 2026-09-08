@@ -18,7 +18,7 @@ import TelegramOptInModal from "./TelegramOptInModal";
 import DateTimePicker from "./DateTimePicker";
 import { Pill, EmptyGroupNotice } from "./CalculatorPill";
 
-export default function CalculatorDetailed({ options }: { options: CalculatorOptionsByField }) {
+export default function CalculatorDetailed({ title, options }: { title: string; options: CalculatorOptionsByField }) {
   const [rooms, setRooms] = useState("2");
   const [calc, setCalc] = useState<Calc2State>({
     area: 25,
@@ -58,7 +58,7 @@ export default function CalculatorDetailed({ options }: { options: CalculatorOpt
 
   return (
     <section id="calculator" className="bg-surface px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
-      <h2 className="mb-2 text-center text-2xl font-extrabold text-ink sm:text-[30px]">Подробный расчёт стоимости</h2>
+      <h2 className="mb-2 text-center text-2xl font-extrabold text-ink sm:text-[30px]">{title}</h2>
       <p className="mb-6 text-center text-sm text-muted sm:mb-8">
         Учитывает тип объекта, состояние, доп. услуги, область и срочность
       </p>

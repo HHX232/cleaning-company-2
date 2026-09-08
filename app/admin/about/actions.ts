@@ -3,23 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { isAdminAuthenticated } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { parseRepeater } from "@/lib/adminForm";
 
 async function requireAdmin() {
   if (!(await isAdminAuthenticated())) {
     throw new Error("Unauthorized");
   }
-}
-
-// Each non-empty line "left | right" becomes an object {a: left, b: right}.
-function parsePairs(raw: string, a: string, b: string): Record<string, string>[] {
-  return raw
-    .split("\n")
-    .map((l) => l.trim())
-    .filter(Boolean)
-    .map((line) => {
-      const [left, ...rest] = line.split("|");
-      return { [a]: left.trim(), [b]: rest.join("|").trim() };
-    });
 }
 
 export async function updateAbout(formData: FormData) {
@@ -30,11 +19,11 @@ export async function updateAbout(formData: FormData) {
     eyebrow: s("eyebrow"),
     heading: s("heading"),
     lead: s("lead"),
-    stats: parsePairs(s("stats"), "value", "label"),
+    stats: parseRepeater(formData, "stats", ["value", "label"]),
     missionTitle: s("missionTitle"),
     missionText1: s("missionText1"),
     missionText2: s("missionText2"),
-    values: parsePairs(s("values"), "title", "text"),
+    values: parseRepeater(formData, "values", ["title", "text"]),
     ctaTitle: s("ctaTitle"),
     ctaText: s("ctaText"),
   };

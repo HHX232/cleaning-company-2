@@ -1,5 +1,6 @@
 import { getAboutContent } from "@/lib/aboutData";
 import AdminForm from "@/components/admin/AdminForm";
+import Repeater from "@/components/admin/Repeater";
 import { updateAbout } from "./actions";
 
 const inputClass = "rounded-lg border border-border bg-bg px-2.5 py-1.5 text-sm text-ink";
@@ -7,9 +8,6 @@ const labelClass = "flex flex-col gap-1 text-[11px] font-bold text-muted";
 
 export default async function AdminAboutPage() {
   const about = await getAboutContent();
-
-  const statsText = about.stats.map((s) => `${s.value} | ${s.label}`).join("\n");
-  const valuesText = about.values.map((v) => `${v.title} | ${v.text}`).join("\n");
 
   return (
     <div className="mx-auto max-w-200">
@@ -19,7 +17,7 @@ export default async function AdminAboutPage() {
         <a href="/o-kompanii" target="_blank" rel="noopener noreferrer" className="underline">
           /o-kompanii
         </a>
-        . В блоках-списках каждая строка — отдельный элемент в формате «слева | справа».
+        .
       </p>
 
       <AdminForm action={updateAbout} className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-4">
@@ -37,8 +35,16 @@ export default async function AdminAboutPage() {
         </label>
 
         <label className={labelClass}>
-          Статистика — по строке на элемент, формат «значение | подпись»
-          <textarea name="stats" defaultValue={statsText} rows={4} className={`${inputClass} font-mono`} />
+          Статистика
+          <Repeater
+            name="stats"
+            fields={[
+              { name: "value", label: "Значение", placeholder: "15 лет" },
+              { name: "label", label: "Подпись", placeholder: "на рынке клининга Беларуси" },
+            ]}
+            initialItems={about.stats}
+            addLabel="+ Добавить показатель"
+          />
         </label>
 
         <label className={labelClass}>
@@ -55,8 +61,16 @@ export default async function AdminAboutPage() {
         </label>
 
         <label className={labelClass}>
-          Ценности — по строке на карточку, формат «заголовок | текст»
-          <textarea name="values" defaultValue={valuesText} rows={5} className={`${inputClass} font-mono`} />
+          Ценности
+          <Repeater
+            name="values"
+            fields={[
+              { name: "title", label: "Заголовок" },
+              { name: "text", label: "Текст", type: "textarea" },
+            ]}
+            initialItems={about.values}
+            addLabel="+ Добавить ценность"
+          />
         </label>
 
         <label className={labelClass}>

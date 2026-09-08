@@ -1,4 +1,4 @@
-import { howItWorksSteps } from "@/lib/content";
+import type { IconCard } from "@/lib/homeContentData";
 import { BadgeCheckIcon, BagIcon, CalendarIcon, CameraIcon, PhoneIcon } from "@/components/ui/LineIcons";
 
 const icons = {
@@ -9,23 +9,26 @@ const icons = {
   badge: BadgeCheckIcon,
 };
 
-export default function HowItWorks() {
+type HowItWorksProps = {
+  title: string;
+  lead: string;
+  steps: IconCard[];
+};
+
+export default function HowItWorks({ title, lead, steps }: HowItWorksProps) {
   return (
     <section className="bg-bg px-4 py-12 sm:px-6 sm:py-16 lg:px-10">
       <div className="mx-auto max-w-300">
         <h2 className="mb-4 max-w-180 text-[28px] leading-tight font-extrabold text-ink sm:text-4xl lg:text-[44px]">
-          Простой и понятный процесс без сюрпризов по цене
+          {title}
         </h2>
-        <p className="mb-10 max-w-160 text-sm leading-relaxed text-muted sm:mb-14 sm:text-base">
-          От первой заявки до приёмки уборки вы понимаете, что будет происходить, сколько это стоит и когда мы
-          приедем.
-        </p>
+        <p className="mb-10 max-w-160 text-sm leading-relaxed text-muted sm:mb-14 sm:text-base">{lead}</p>
 
         <div className="flex flex-col gap-5 sm:gap-6">
-          {howItWorksSteps.map((step, i) => {
-            const Icon = icons[step.icon as keyof typeof icons];
+          {steps.map((step, i) => {
+            const Icon = icons[step.icon as keyof typeof icons] ?? BadgeCheckIcon;
             const isFirst = i === 0;
-            const isLast = i === howItWorksSteps.length - 1;
+            const isLast = i === steps.length - 1;
             return (
               <div key={step.title} className="flex gap-5 sm:gap-7">
                 {/* Numbered circle sits between two flex-1 line segments, so

@@ -12,6 +12,7 @@ export type ServiceBlockData = {
 };
 
 type ServicesDetailProps = {
+  title: string;
   bigServices: ServiceBlockData[];
   smallServices: ServiceBlockData[];
   imageSrcBySlot?: Record<string, string>;
@@ -26,7 +27,7 @@ function displayItems(items: string[]): string[] {
   return [...items.slice(0, MAX_CHECKLIST_ITEMS), "и другое"];
 }
 
-export default function ServicesDetail({ bigServices, smallServices, imageSrcBySlot = {} }: ServicesDetailProps) {
+export default function ServicesDetail({ title, bigServices, smallServices, imageSrcBySlot = {} }: ServicesDetailProps) {
   const openContactModal = useContactModal();
 
   // The big-service row is admin-editable in count, so the column layout adapts:
@@ -43,7 +44,7 @@ export default function ServicesDetail({ bigServices, smallServices, imageSrcByS
     <section id="catalog" className="px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
       <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">
         <Link href="/#prices" className="transition-colors hover:text-primary">
-          Наши услуги
+          {title}
         </Link>
       </h2>
 

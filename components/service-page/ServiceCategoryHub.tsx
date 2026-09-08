@@ -7,10 +7,11 @@ import Footer from "@/components/landing/Footer";
 import Breadcrumbs from "@/components/ui/Breadcrumbs";
 import OrderButton from "@/components/landing/OrderButton";
 import { company } from "@/lib/content";
-import { getServiceCategory, getServiceCategoryChildren } from "@/lib/serviceCategories";
+import { getServiceCategoryChildren } from "@/lib/serviceCategories";
+import { getServiceCategoryContent, getServiceHubShared } from "@/lib/serviceCategoriesData";
 
-export function categoryMetadata(slug: string): Metadata {
-  const cat = getServiceCategory(slug);
+export async function categoryMetadata(slug: string): Promise<Metadata> {
+  const cat = await getServiceCategoryContent(slug);
   if (!cat) return {};
   return {
     title: `${cat.title} — ${company.name}`,
@@ -20,10 +21,10 @@ export function categoryMetadata(slug: string): Metadata {
 }
 
 export default async function ServiceCategoryHub({ slug }: { slug: string }) {
-  const cat = getServiceCategory(slug);
+  const cat = await getServiceCategoryContent(slug);
   if (!cat) notFound();
 
-  const items = await getServiceCategoryChildren(cat.href);
+  const [items, shared] = await Promise.all([getServiceCategoryChildren(cat.href), getServiceHubShared()]);
 
   return (
     <div className="min-h-screen bg-bg text-ink">
@@ -44,9 +45,9 @@ export default async function ServiceCategoryHub({ slug }: { slug: string }) {
 
       <section className="px-4 py-10 sm:px-6 sm:py-14 lg:px-10">
         <div className="mx-auto max-w-260">
-          <h2 className="mb-6 text-xl font-extrabold text-ink sm:text-2xl">Выберите услугу</h2>
+          <h2 className="mb-6 text-xl font-extrabold text-ink sm:text-2xl">{shared.sectionTitle}</h2>
           {items.length === 0 ? (
-            <p className="text-sm text-muted">Услуги этой категории скоро появятся.</p>
+            <p className="text-sm text-muted">{shared.emptyText}</p>
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
               {items.map((it) => (
@@ -69,10 +70,8 @@ export default async function ServiceCategoryHub({ slug }: { slug: string }) {
 
       <section className="px-4 pb-12 sm:px-6 sm:pb-16 lg:px-10">
         <div className="mx-auto flex max-w-200 flex-col items-center gap-4 rounded-[22px] bg-dark px-6 py-10 text-center sm:px-10 sm:py-12">
-          <h2 className="text-xl font-extrabold text-white sm:text-2xl">Не нашли нужную услугу?</h2>
-          <p className="max-w-140 text-sm leading-relaxed text-[#d6d6d6] sm:text-[15px]">
-            Оставьте заявку — подберём решение под вашу задачу и рассчитаем стоимость бесплатно.
-          </p>
+          <h2 className="text-xl font-extrabold text-white sm:text-2xl">{shared.ctaTitle}</h2>
+          <p className="max-w-140 text-sm leading-relaxed text-[#d6d6d6] sm:text-[15px]">{shared.ctaText}</p>
           <OrderButton className="mt-1 cursor-pointer rounded-[11px] bg-primary px-8 py-3.5 text-sm font-bold text-on-primary transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-[0_10px_24px_rgba(0,0,0,0.25)] active:translate-y-0 active:scale-[0.98] sm:text-base">
             Заказать уборку
           </OrderButton>

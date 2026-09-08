@@ -9,17 +9,18 @@ export type SpecialistMember = {
 };
 
 type SpecialistsProps = {
+  title: string;
   members: SpecialistMember[];
 };
 
 // Homepage "Наши специалисты" — now driven by the admin-editable TeamMember
 // table (/admin/team), the same source the service pages use.
-export default function Specialists({ members }: SpecialistsProps) {
+export default function Specialists({ title, members }: SpecialistsProps) {
   if (members.length === 0) return null;
 
   return (
     <section id="specialists" className="px-4 pt-6 pb-10 sm:px-6 sm:pb-14 lg:px-10">
-      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">Наши специалисты</h2>
+      <h2 className="mb-6 text-center text-2xl font-extrabold text-ink sm:mb-8 sm:text-[30px]">{title}</h2>
       <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4">
         {members.map((m, i) => (
           <div key={m.id} className="overflow-hidden rounded-2xl border border-border bg-surface text-center">

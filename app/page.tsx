@@ -16,7 +16,7 @@ import Specialists from "@/components/landing/Specialists";
 import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import Reviews from "@/components/landing/Reviews";
 import Footer from "@/components/landing/Footer";
-import { faq } from "@/lib/content";
+import { getHomeContent } from "@/lib/homeContentData";
 import { getGalleryItems, filterGalleryItems } from "@/lib/galleryData";
 import { homeImageSlots } from "@/lib/homeImageSlots";
 import { homeImageDefaults } from "@/lib/homeImageDefaults";
@@ -70,7 +70,7 @@ const getTeamMembers = unstable_cache(
 );
 
 export default async function Home() {
-  const [images, promos, serviceBlocks, calculatorOptions, reviews, priceData, galleryItems, teamMembers] =
+  const [images, promos, serviceBlocks, calculatorOptions, reviews, priceData, galleryItems, teamMembers, home] =
     await Promise.all([
       getHomeImages(),
       getPromos(),
@@ -80,6 +80,7 @@ export default async function Home() {
       getPriceData(),
       getGalleryItems(),
       getTeamMembers(),
+      getHomeContent(),
     ]);
   const bigServices = serviceBlocks.filter((b) => b.size === "BIG");
   const smallServices = serviceBlocks.filter((b) => b.size === "SMALL");
@@ -106,13 +107,25 @@ export default async function Home() {
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(faq)) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd(home.faqItems)) }}
       />
       <Header />
       <Nav />
-      <Hero imageSrc={src("hero-home")} />
-      <HowItWorks />
+      <Hero
+        imageSrc={src("hero-home")}
+        eyebrow={home.heroEyebrow}
+        titleMain={home.heroTitleMain}
+        titleHighlight={home.heroTitleHighlight}
+        titleSuffix={home.heroTitleSuffix}
+        subtitle={home.heroSubtitle}
+        ctaPrimary={home.heroCtaPrimary}
+        ctaSecondary={home.heroCtaSecondary}
+        services={home.heroServices}
+        stats={home.heroStats}
+      />
+      <HowItWorks title={home.howItWorksTitle} lead={home.howItWorksLead} steps={home.howItWorks} />
       <WhyUs
+        title={home.reasonsSectionTitle}
         slideSrcs={[
           src("why-us-reason1"),
           src("why-us-reason2"),
@@ -120,37 +133,45 @@ export default async function Home() {
           src("why-us-reason4"),
           src("why-us-reason5"),
         ]}
+        reasons={home.reasons}
       />
-      <Promotions promos={promos} />
-      <ServicesDetail bigServices={bigServices} smallServices={smallServices} imageSrcBySlot={servicesImageSrcBySlot} />
-      <Pricing priceData={priceData} />
-      <Gallery title="Примеры работ" items={filterGalleryItems(galleryItems, false)} />
-      <ServiceGuarantees />
+      <Promotions title={home.promotionsTitle} promos={promos} />
+      <ServicesDetail
+        title={home.servicesTitle}
+        bigServices={bigServices}
+        smallServices={smallServices}
+        imageSrcBySlot={servicesImageSrcBySlot}
+      />
+      <Pricing title={home.pricesTitle} priceData={priceData} />
+      <Gallery title={home.galleryTitle} items={filterGalleryItems(galleryItems, false)} />
+      <ServiceGuarantees title={home.serviceGuaranteesTitle} items={home.serviceGuarantees} />
       <CtaBanner
-        title="Специализированный-клининг – уборка любой сложности 24/7!"
+        title={home.ctaBannerTitle}
         imageLabel="Фото: сотрудник компании"
         imageSrc={src("cta-banner-home")}
         imageClassName="object-[center_30%]"
-        ctaLabel="Заказать консультацию"
+        ctaLabel={home.ctaBannerCtaLabel}
       >
-        <p className="mb-4 border-l-[3px] border-primary pl-4 text-sm leading-relaxed font-semibold text-[#f2f2f2] sm:mb-4.5 sm:text-base">
-          Произошёл потоп, пожар или другое ЧП? Мы оперативно выезжаем 24/7 и быстро устраняем последствия, бережно
-          очищая помещения с помощью профессиональных технологий.
-        </p>
-        <p className="mb-4 text-sm leading-relaxed text-[#dcdcdc] sm:mb-4.5 sm:text-[15px]">
-          Работаем там, где другие не берутся: убираем запущенные квартиры, помещения после смерти и ликвидируем
-          антисанитарию, используя безопасные средства и современное оборудование.
-        </p>
-        <p className="mb-5 text-sm leading-relaxed font-bold text-white sm:mb-6 sm:text-[15px]">
-          Оставьте заявку – наш специалист готов выехать в любое время, чтобы быстро и качественно решить вашу
-          проблему!
-        </p>
+        {home.ctaBannerParagraphs.map((p, i) => (
+          <p
+            key={p.slice(0, 24)}
+            className={
+              i === 0
+                ? "mb-4 border-l-[3px] border-primary pl-4 text-sm leading-relaxed font-semibold text-[#f2f2f2] sm:mb-4.5 sm:text-base"
+                : i === home.ctaBannerParagraphs.length - 1
+                  ? "mb-5 text-sm leading-relaxed font-bold text-white sm:mb-6 sm:text-[15px]"
+                  : "mb-4 text-sm leading-relaxed text-[#dcdcdc] sm:mb-4.5 sm:text-[15px]"
+            }
+          >
+            {p}
+          </p>
+        ))}
       </CtaBanner>
-      <Specialists members={teamMembers} />
+      <Specialists title={home.specialistsTitle} members={teamMembers} />
       <WhyChooseUs />
-      <CalculatorDetailed options={calculatorOptions} />
-      <Reviews reviews={reviews} />
-      <Faq title="Вопросы и ответы" items={faq} defaultOpenIndex={1} />
+      <CalculatorDetailed title={home.calculatorTitle} options={calculatorOptions} />
+      <Reviews title={home.reviewsTitle} reviews={reviews} />
+      <Faq title={home.faqSectionTitle} items={home.faqItems} defaultOpenIndex={1} />
       <Footer id="order" />
     </div>
   );

@@ -5,10 +5,12 @@ import Header from "@/components/landing/Header";
 import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
 import ServiceCategoryPage from "@/components/service-page/ServiceCategoryPage";
-import { servicePageHeroDefault, servicePageConsultationDefault } from "@/lib/homeImageDefaults";
+import { servicePageHeroDefault, servicePageConsultationDefault, midBannerStaffDefault } from "@/lib/homeImageDefaults";
 import { prisma } from "@/lib/prisma";
 import { getCalculatorOptions } from "@/lib/calculatorOptionsData";
 import { getGalleryItems, filterGalleryItems } from "@/lib/galleryData";
+import { getServiceSharedContent } from "@/lib/serviceSharedData";
+import { imageUrl } from "@/lib/imageStorage";
 
 // ISR: known slugs are built statically below and served from cache, then
 // silently re-fetched from the DB at most once every 10 minutes. A slug that
@@ -45,6 +47,12 @@ const getReviews = unstable_cache(
   { revalidate: 600 },
 );
 
+const getMidBannerStaffImage = unstable_cache(
+  async () => prisma.siteImage.findUnique({ where: { key: "svc-mid-banner-staff" } }),
+  ["svc-mid-banner-staff-image"],
+  { revalidate: 600 },
+);
+
 export async function generateStaticParams() {
   const pages = await prisma.servicePage.findMany({ select: { slug: true } });
   return pages.map((p) => ({ slug: p.slug }));
@@ -63,13 +71,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ServicePageRoute({ params }: PageProps) {
   const { slug } = await params;
-  const [page, teamMembers, calculatorOptions, reviews, galleryItems] = await Promise.all([
-    getServicePage(slug),
-    getTeamMembers(),
-    getCalculatorOptions(),
-    getReviews(),
-    getGalleryItems(),
-  ]);
+  const [page, teamMembers, calculatorOptions, reviews, galleryItems, shared, midBannerStaffImage] =
+    await Promise.all([
+      getServicePage(slug),
+      getTeamMembers(),
+      getCalculatorOptions(),
+      getReviews(),
+      getGalleryItems(),
+      getServiceSharedContent(),
+      getMidBannerStaffImage(),
+    ]);
 
   if (!page) notFound();
 
@@ -94,6 +105,10 @@ export default async function ServicePageRoute({ params }: PageProps) {
         calculatorOptions={calculatorOptions}
         reviews={reviews}
         galleryItems={filterGalleryItems(galleryItems, isWindowsPage)}
+        shared={shared}
+        midBannerStaffPhotoUrl={
+          midBannerStaffImage ? imageUrl("svc-mid-banner-staff", midBannerStaffImage.updatedAt) : midBannerStaffDefault
+        }
       />
       <Footer id="order" />
     </div>

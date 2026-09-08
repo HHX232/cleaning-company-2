@@ -1,4 +1,4 @@
-import { serviceGuarantees } from "@/lib/content";
+import type { IconCard } from "@/lib/homeContentData";
 import { ClockIcon, HeartIcon, ShieldCheckIcon, TrophyIcon, WalletIcon } from "@/components/ui/LineIcons";
 
 const icons = {
@@ -9,7 +9,12 @@ const icons = {
   heart: HeartIcon,
 };
 
-export default function ServiceGuarantees() {
+type ServiceGuaranteesProps = {
+  title: string;
+  items: IconCard[];
+};
+
+export default function ServiceGuarantees({ title, items }: ServiceGuaranteesProps) {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-primary to-primary-dark px-4 py-12 sm:px-6 sm:py-16 lg:px-10">
       <div className="pointer-events-none absolute top-[-80px] right-[-60px] h-70 w-70 rounded-full bg-white/10 blur-3xl" />
@@ -17,12 +22,12 @@ export default function ServiceGuarantees() {
 
       <div className="relative mx-auto max-w-300">
         <h2 className="mb-10 max-w-180 text-[28px] leading-tight font-extrabold text-on-primary sm:mb-12 sm:text-4xl lg:text-[44px]">
-          Уборка с понятными условиями и личной ответственностью
+          {title}
         </h2>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-          {serviceGuarantees.map((item) => {
-            const Icon = icons[item.icon as keyof typeof icons];
+          {items.map((item) => {
+            const Icon = icons[item.icon as keyof typeof icons] ?? ShieldCheckIcon;
             return (
               <div key={item.title} className="rounded-2xl bg-surface p-5 sm:p-6.5">
                 <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
