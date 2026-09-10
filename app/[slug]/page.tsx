@@ -10,6 +10,7 @@ import { prisma } from "@/lib/prisma";
 import { getCalculatorOptions } from "@/lib/calculatorOptionsData";
 import { getGalleryItems, filterGalleryItems } from "@/lib/galleryData";
 import { getServiceSharedContent } from "@/lib/serviceSharedData";
+import { getWhyUsPageContent } from "@/lib/whyUsPageData";
 import { imageUrl } from "@/lib/imageStorage";
 
 // ISR: known slugs are built statically below and served from cache, then
@@ -71,7 +72,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ServicePageRoute({ params }: PageProps) {
   const { slug } = await params;
-  const [page, teamMembers, calculatorOptions, reviews, galleryItems, shared, midBannerStaffImage] =
+  const [page, teamMembers, calculatorOptions, reviews, galleryItems, shared, midBannerStaffImage, whyUs] =
     await Promise.all([
       getServicePage(slug),
       getTeamMembers(),
@@ -80,6 +81,7 @@ export default async function ServicePageRoute({ params }: PageProps) {
       getGalleryItems(),
       getServiceSharedContent(),
       getMidBannerStaffImage(),
+      getWhyUsPageContent(),
     ]);
 
   if (!page) notFound();
@@ -106,6 +108,7 @@ export default async function ServicePageRoute({ params }: PageProps) {
         reviews={reviews}
         galleryItems={filterGalleryItems(galleryItems, isWindowsPage)}
         shared={shared}
+        whyUsContent={whyUs}
         midBannerStaffPhotoUrl={
           midBannerStaffImage ? imageUrl("svc-mid-banner-staff", midBannerStaffImage.updatedAt) : midBannerStaffDefault
         }

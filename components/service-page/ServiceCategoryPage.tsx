@@ -15,6 +15,7 @@ import ServiceInfoBlocks from "./ServiceInfoBlocks";
 import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import { useContactModal } from "@/components/landing/ContactModalProvider";
 import type { ServiceSharedContent } from "@/lib/serviceSharedData";
+import type { WhyUsPageContent } from "@/lib/whyUsPageData";
 import { teamPhotoDefaultFor } from "@/lib/teamPhotoDefaults";
 import type { CalculatorOptionsByField } from "@/lib/calculator";
 
@@ -61,6 +62,7 @@ type ServiceCategoryPageProps = {
   reviews: ReviewItem[];
   galleryItems: GalleryItemDto[];
   shared: ServiceSharedContent;
+  whyUsContent: WhyUsPageContent;
   midBannerStaffPhotoUrl?: string;
 };
 
@@ -80,6 +82,7 @@ export default function ServiceCategoryPage({
   reviews,
   galleryItems,
   shared,
+  whyUsContent,
   midBannerStaffPhotoUrl,
 }: ServiceCategoryPageProps) {
   const openContactModal = useContactModal();
@@ -209,7 +212,7 @@ export default function ServiceCategoryPage({
         ctaLabel={shared.consultationCtaLabel}
       />
 
-      <WhyChooseUs />
+      <WhyChooseUs content={whyUsContent} />
 
       <CalculatorDetailed title={shared.calculatorTitle} options={calculatorOptions} />
 

@@ -5,6 +5,7 @@ import Footer from "@/components/landing/Footer";
 import OrderButton from "@/components/landing/OrderButton";
 import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import { company } from "@/lib/content";
+import { getWhyUsPageContent } from "@/lib/whyUsPageData";
 
 export const metadata: Metadata = {
   title: `Почему выбирают нас — ${company.name}`,
@@ -13,13 +14,14 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pochemu-vybirayut-nas" },
 };
 
-export default function WhyUsPage() {
+export default async function WhyUsPage() {
+  const content = await getWhyUsPageContent();
   return (
     <div className="min-h-screen bg-bg text-ink">
       <Header />
       <Nav />
 
-      <WhyChooseUs as="h1" />
+      <WhyChooseUs content={content} as="h1" />
 
       <section className="px-4 pb-12 sm:px-6 sm:pb-16 lg:px-10">
         <div className="mx-auto flex max-w-200 flex-col items-center gap-4 rounded-[22px] bg-dark px-6 py-10 text-center sm:px-10 sm:py-12">

@@ -17,6 +17,7 @@ import WhyChooseUs from "@/components/landing/WhyChooseUs";
 import Reviews from "@/components/landing/Reviews";
 import Footer from "@/components/landing/Footer";
 import { getHomeContent } from "@/lib/homeContentData";
+import { getWhyUsPageContent } from "@/lib/whyUsPageData";
 import { getGalleryItems, filterGalleryItems } from "@/lib/galleryData";
 import { homeImageSlots } from "@/lib/homeImageSlots";
 import { homeImageDefaults } from "@/lib/homeImageDefaults";
@@ -70,7 +71,7 @@ const getTeamMembers = unstable_cache(
 );
 
 export default async function Home() {
-  const [images, promos, serviceBlocks, calculatorOptions, reviews, priceData, galleryItems, teamMembers, home] =
+  const [images, promos, serviceBlocks, calculatorOptions, reviews, priceData, galleryItems, teamMembers, home, whyUs] =
     await Promise.all([
       getHomeImages(),
       getPromos(),
@@ -81,6 +82,7 @@ export default async function Home() {
       getGalleryItems(),
       getTeamMembers(),
       getHomeContent(),
+      getWhyUsPageContent(),
     ]);
   const bigServices = serviceBlocks.filter((b) => b.size === "BIG");
   const smallServices = serviceBlocks.filter((b) => b.size === "SMALL");
@@ -168,7 +170,7 @@ export default async function Home() {
         ))}
       </CtaBanner>
       <Specialists title={home.specialistsTitle} members={teamMembers} />
-      <WhyChooseUs />
+      <WhyChooseUs content={whyUs} />
       <CalculatorDetailed title={home.calculatorTitle} options={calculatorOptions} />
       <Reviews title={home.reviewsTitle} reviews={reviews} />
       <Faq title={home.faqSectionTitle} items={home.faqItems} defaultOpenIndex={1} />
